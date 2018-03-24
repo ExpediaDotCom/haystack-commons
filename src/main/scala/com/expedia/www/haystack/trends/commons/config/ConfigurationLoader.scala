@@ -26,44 +26,55 @@ import scala.collection.JavaConverters._
 object ConfigurationLoader {
 
   private val ENV_NAME_PREFIX = "HAYSTACK_PROP_"
+
   private val LOGGER = LoggerFactory.getLogger(ConfigurationLoader.getClass)
 
   /**
-    * Load and return the configuration
-    * if overrides_config_path env variable exists, then we load that config file and use base.conf as fallback,
-    * else we load the config from env variables(prefixed with haystack) and use base.conf as fallback
+    * Loads a HOCON config file and overrides entries in them with values, if specified, from environment variables
+    * with given prefix
+    * For example, if the envNamePrefix given is HAYSTACK_ and if an environment variable exist with the name
+    * HAYSTACK_KAFKA_STREAMS_NUM_STREAM_THREADS, then a config entry with key kafka.streams.num.stream.threads
+    * will be added to the config object or an existing value in the config object will be overwritten
+    *
+    * @param resourceName name of the resource file to be loaded. Default value is `config/base.conf`
+    * @param envNamePrefix env variable prefix to override config values. Default is `HAYSTACK_PROP_`
+    *
+    * @return an instance of com.typesafe.Config
     */
-  lazy val loadAppConfig: Config = {
-
-    val baseConfig = ConfigFactory.load("config/base.conf")
+  def loadConfigFileWithEnvOverrides(resourceName : String = "config/base.conf", envNamePrefix : String = ENV_NAME_PREFIX) : Config = {
+    val baseConfig = ConfigFactory.load(resourceName)
 
     val config = sys.env.get("HAYSTACK_OVERRIDES_CONFIG_PATH") match {
       case Some(path) => ConfigFactory.parseFile(new File(path)).withFallback(baseConfig)
-      case _ => loadFromEnvVars().withFallback(baseConfig)
+      case _ => parsePropertiesFromMap(sys.env, envNamePrefix).withFallback(baseConfig)
     }
 
     LOGGER.info(config.root().render(ConfigRenderOptions.defaults().setOriginComments(false)))
+
     config
   }
 
   /**
-    * @return new config object with haystack specific environment variables
+    * Converts a Map[String, String] to HOCON Config Object
+    * Filters only entries in the map where the keys start with the given prefix, removes the prefix
+    * and converts the key to HOCON dot notation.  For example, if the key is HAYSTACK_KAFKA_STREAMS_NUM_STREAM_THREADS
+    * and the prefix given is HAYSTACK_ then the new key will be kafka.streams.num.stream.threads
     */
-  private def loadFromEnvVars(): Config = {
-    val envMap = sys.env.filter {
-      case (envName, _) => isHaystackEnvVar(envName)
+  def parsePropertiesFromMap(data: Map[String, String], prefix: String) : Config = {
+    val map = data.filter {
+      case (envName, _) => envName.startsWith(prefix)
     } map {
-      case (envName, envValue) => (transformEnvVarName(envName), envValue)
+      case (envName, envValue) => (transformName(envName, prefix), envValue)
     }
 
-    ConfigFactory.parseMap(envMap.asJava)
+    ConfigFactory.parseMap(map.asJava)
   }
 
-  private def isHaystackEnvVar(env: String): Boolean = env.startsWith(ENV_NAME_PREFIX)
+  /**
+    * Converts a name to HOCON format removes the prefix given
+    * for e.g. if the name given is HAYSTACK_KAFKA_STREAMS_NUM_STREAM_THREADS and
+    * prefix is HAYSTACK_ then the return string will be kafka.streams.num.stream.threads
+    */
+  private def transformName(name: String, prefix: String): String = name.replaceFirst(prefix, "").toLowerCase.replace("_", ".")
 
-  // converts the env variable to HOCON format
-  // for e.g. env HAYSTACK_KAFKA_STREAMS_NUM_STREAM_THREADS to kafka.streams.num.stream.threads
-  private def transformEnvVarName(env: String): String = {
-    env.replaceFirst(ENV_NAME_PREFIX, "").toLowerCase.replace("_", ".")
-  }
 }
