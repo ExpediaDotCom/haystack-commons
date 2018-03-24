@@ -14,8 +14,7 @@
  *     limitations under the License.
  *
  */
-package com.expedia.www.haystack.trends.commons.entities
-
+package com.expedia.www.haystack.commons.entities
 
 /**
   * This enum contains the metric intervals supported by the app

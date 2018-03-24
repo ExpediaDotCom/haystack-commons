@@ -15,9 +15,8 @@
  *
  */
 
-package com.expedia.www.haystack.trends.commons.unit.tests
+package com.expedia.www.haystack.commons.logger
 
-import com.expedia.www.haystack.trends.commons.logger.LoggerUtils
 import org.scalatest.easymock.EasyMockSugar
 import org.scalatest.{FunSpec, Matchers}
 import org.slf4j.{ILoggerFactory, Logger}

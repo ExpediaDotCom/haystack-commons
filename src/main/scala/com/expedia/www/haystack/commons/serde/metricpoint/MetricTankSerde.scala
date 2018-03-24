@@ -16,13 +16,13 @@
  *
  */
 
-package com.expedia.www.haystack.trends.commons.serde.metricpoint
+package com.expedia.www.haystack.commons.serde.metricpoint
 
 import java.nio.ByteBuffer
 import java.util
 
-import com.expedia.www.haystack.trends.commons.entities.{Interval, MetricPoint, MetricType, TagKeys}
-import com.expedia.www.haystack.trends.commons.metrics.MetricsSupport
+import com.expedia.www.haystack.commons.entities.{Interval, MetricPoint, MetricType, TagKeys}
+import com.expedia.www.haystack.commons.metrics.MetricsSupport
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.kafka.common.serialization.{Deserializer, Serde, Serializer}
 import org.msgpack.core.MessagePack.Code

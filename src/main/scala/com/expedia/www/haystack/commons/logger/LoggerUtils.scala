@@ -16,7 +16,7 @@
  *
  */
 
-package com.expedia.www.haystack.trends.commons.logger
+package com.expedia.www.haystack.commons.logger
 
 import org.msgpack.core.annotations.VisibleForTesting
 import org.slf4j.{ILoggerFactory, LoggerFactory}

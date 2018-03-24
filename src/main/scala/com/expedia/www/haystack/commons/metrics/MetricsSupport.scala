@@ -14,7 +14,7 @@
  *     limitations under the License.
  *
  */
-package com.expedia.www.haystack.trends.commons.metrics
+package com.expedia.www.haystack.commons.metrics
 
 import com.codahale.metrics.{Metric, MetricFilter, MetricRegistry}
 
@@ -23,7 +23,9 @@ trait MetricsSupport {
 }
 
 object MetricsRegistries {
+
   val metricRegistry = new MetricRegistry()
+
   implicit class MetricRegistryExtension(val metricRegistry: MetricRegistry) extends AnyVal {
 
     def getOrAddGauge[T](expectedName: String, gauge: com.codahale.metrics.Gauge[T]): Boolean = {

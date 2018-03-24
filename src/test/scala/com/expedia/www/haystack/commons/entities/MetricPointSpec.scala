@@ -15,10 +15,9 @@
  *
  */
 
-package com.expedia.www.haystack.trends.commons.unit.tests
+package com.expedia.www.haystack.commons.entities
 
-import com.expedia.www.haystack.trends.commons.entities.{MetricPoint, MetricType, TagKeys}
-import com.expedia.www.haystack.trends.commons.unit.UnitTestSpec
+import com.expedia.www.haystack.commons.unit.UnitTestSpec
 
 
 class MetricPointSpec extends UnitTestSpec {

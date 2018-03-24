@@ -14,9 +14,9 @@
  *     limitations under the License.
  *
  */
-package com.expedia.www.haystack.trends.commons.entities
+package com.expedia.www.haystack.commons.entities
 
-import com.expedia.www.haystack.trends.commons.entities.MetricType.MetricType
+import com.expedia.www.haystack.commons.entities.MetricType.MetricType
 
 /**
   * The metricpoint object adheres to the metrics 2.0 specifications

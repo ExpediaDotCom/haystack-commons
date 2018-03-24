@@ -14,7 +14,7 @@
  *     limitations under the License.
  *
  */
-package com.expedia.www.haystack.trends.commons.config
+package com.expedia.www.haystack.commons.config
 
 import java.io.File
 

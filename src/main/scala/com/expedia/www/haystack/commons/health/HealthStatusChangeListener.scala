@@ -16,9 +16,9 @@
  *
  */
 
-package com.expedia.www.haystack.trends.commons.health
+package com.expedia.www.haystack.commons.health
 
-import com.expedia.www.haystack.trends.commons.health.HealthStatus.HealthStatus
+import com.expedia.www.haystack.commons.health.HealthStatus.HealthStatus
 
 /**
   * health status listener
