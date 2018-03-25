@@ -22,6 +22,6 @@ import org.scalatest._
 trait UnitTestSpec extends WordSpec with GivenWhenThen with Matchers with BeforeAndAfterAll with BeforeAndAfterEach {
 
  protected def currentTimeInSecs: Long = {
-    System.currentTimeMillis() / 1000l
+    System.currentTimeMillis() / 1000L
   }
 }

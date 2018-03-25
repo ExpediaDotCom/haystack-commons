@@ -1,25 +1,23 @@
 /*
+ *  Copyright 2017 Expedia, Inc.
  *
- *     Copyright 2017 Expedia, Inc.
+ *     Licensed under the Apache License, Version 2.0 (the "License");
+ *     you may not use this file except in compliance with the License.
+ *     You may obtain a copy of the License at
  *
- *      Licensed under the Apache License, Version 2.0 (the "License");
- *      you may not use this file except in compliance with the License.
- *      You may obtain a copy of the License at
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
- *          http://www.apache.org/licenses/LICENSE-2.0
- *
- *      Unless required by applicable law or agreed to in writing, software
- *      distributed under the License is distributed on an "AS IS" BASIS,
- *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *      See the License for the specific language governing permissions and
- *      limitations under the License.
+ *     Unless required by applicable law or agreed to in writing, software
+ *     distributed under the License is distributed on an "AS IS" BASIS,
+ *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *     See the License for the specific language governing permissions and
+ *     limitations under the License.
  *
  */
 
 package com.expedia.www.haystack.commons.serde.metricpoint
 
 import java.nio.ByteBuffer
-import java.util
 
 import com.expedia.www.haystack.commons.entities.{Interval, MetricPoint, MetricType, TagKeys}
 import com.expedia.www.haystack.commons.metrics.MetricsSupport
@@ -48,7 +46,7 @@ class MetricTankSerde(enableMetricPointReplacement: Boolean) extends Serde[Metri
     new MetricPointSerializer(enableMetricPointReplacement)
   }
 
-  override def configure(configs: util.Map[String, _], isKey: Boolean): Unit = ()
+  override def configure(configs: java.util.Map[String, _], isKey: Boolean): Unit = ()
 
   override def close(): Unit = ()
 }
@@ -66,7 +64,7 @@ class MetricPointDeserializer(enableMetricPointReplacement: Boolean) extends Des
   private val tagsKey = "Tags"
   private val idKey = "Id"
 
-  override def configure(map: util.Map[String, _], b: Boolean): Unit = ()
+  override def configure(map: java.util.Map[String, _], b: Boolean): Unit = ()
 
 
   /**
@@ -125,9 +123,10 @@ class MetricPointSerializer(enableMetricPointReplacement: Boolean) extends Seria
   private val typeKey = "Mtype"
   private val tagsKey = "Tags"
   private[commons] val intervalKey = "Interval"
+
   def this() = this(true)
 
-  override def configure(map: util.Map[String, _], b: Boolean): Unit = ()
+  override def configure(map: java.util.Map[String, _], b: Boolean): Unit = ()
 
   override def serialize(topic: String, metricPoint: MetricPoint): Array[Byte] = {
     try {
@@ -179,5 +178,4 @@ class MetricPointSerializer(enableMetricPointReplacement: Boolean) extends Seria
       pk.addPayload(buffer.array())
     }
   }
-
 }

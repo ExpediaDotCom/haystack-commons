@@ -18,8 +18,11 @@
 package com.expedia.www.haystack.commons.config
 
 import com.expedia.www.haystack.commons.unit.UnitTestSpec
+import com.typesafe.config.ConfigFactory
+import scala.collection.JavaConverters._
 
 class ConfigurationLoaderSpec extends UnitTestSpec {
+  private val keyName = "traces.key.sequence"
 
   "ConfigurationLoader.loadConfigFileWithEnvOverrides" should {
 
@@ -39,11 +42,56 @@ class ConfigurationLoaderSpec extends UnitTestSpec {
       Given("a sample map with a key-value")
       val data = Map("FOO_HAYSTACK_GRAPHITE_HOST" -> "influxdb.kube-system.svc", "foo.bar" -> "baz")
       When("parsePropertiesFromMap is invoked with matching prefix")
-      val config = ConfigurationLoader.parsePropertiesFromMap(data, "FOO_")
+      val config = ConfigurationLoader.parsePropertiesFromMap(data, Set(), "FOO_")
       Then("it should transform the entries that match the prefix as expected")
       Some("influxdb.kube-system.svc") should equal(config.get("haystack.graphite.host"))
-      None should be (config.get("foo.bar"))
+      None should be(config.get("foo.bar"))
+    }
+
+    "parses a given map with empty array of values and return transformed key-value that matches a given prefix" in {
+      Given("a sample map with a key and empty array of values")
+      val envVars = Map[String, String](ConfigurationLoader.ENV_NAME_PREFIX + "TRACES_KEY_SEQUENCE" -> "[]")
+      When("parsePropertiesFromMap is invoked")
+      val config = ConfigFactory.parseMap(ConfigurationLoader.parsePropertiesFromMap(envVars, Set(keyName), ConfigurationLoader.ENV_NAME_PREFIX).asJava)
+      Then("it should return an empty list with given key")
+      config.getList(keyName).size() shouldBe 0
+    }
+
+    "parses a given map with non-empty array of values and return transformed key-value that matches a given prefix" in {
+      Given("a sample map with a key and empty array of values")
+      val envVars = Map[String, String](ConfigurationLoader.ENV_NAME_PREFIX + "TRACES_KEY_SEQUENCE" -> "[v1]")
+      When("parsePropertiesFromMap is invoked")
+      val config = ConfigFactory.parseMap(ConfigurationLoader.parsePropertiesFromMap(envVars, Set(keyName), ConfigurationLoader.ENV_NAME_PREFIX).asJava)
+      Then("it should return an empty list with given key")
+      config.getStringList(keyName).size() shouldBe 1
+      config.getStringList(keyName).get(0) shouldBe "v1"
+    }
+
+    "should throw runtime exception if env variable doesn't comply array value signature - [..]" in {
+      Given("a sample map with a key and non compliant array of values")
+      val envVars = Map[String, String](ConfigurationLoader.ENV_NAME_PREFIX + "TRACES_KEY_SEQUENCE" -> "v1")
+      When("parsePropertiesFromMap is invoked")
+      val exception = intercept[RuntimeException] {
+        ConfigurationLoader.parsePropertiesFromMap(envVars, Set(keyName), ConfigurationLoader.ENV_NAME_PREFIX)
+      }
+      Then("it should throw exception with excepted message")
+      exception.getMessage shouldEqual "config key is of array type, so it should start and end with '[', ']' respectively"
+    }
+
+    "should load config from env variable with non-empty value" in {
+      Given("a sample map with a key and empty array of values")
+      val envVars = Map[String, String](
+        ConfigurationLoader.ENV_NAME_PREFIX + "TRACES_KEY_SEQUENCE" -> "[v1]",
+        ConfigurationLoader.ENV_NAME_PREFIX + "TRACES_KEY2" -> "v2",
+        "NON_HAYSTACK_KEY" -> "not_interested")
+
+      When("parsePropertiesFromMap is invoked")
+      val config = ConfigFactory.parseMap(ConfigurationLoader.parsePropertiesFromMap(envVars, Set(keyName), ConfigurationLoader.ENV_NAME_PREFIX).asJava)
+      Then("it should return an empty list with given key")
+      config.getStringList(keyName).size() shouldBe 1
+      config.getStringList(keyName).get(0) shouldBe "v1"
+      config.getString("traces.key2") shouldBe "v2"
+      config.hasPath("non.haystack.key") shouldBe false
     }
   }
-
 }

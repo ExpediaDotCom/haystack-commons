@@ -16,7 +16,7 @@
  */
 package com.expedia.www.haystack.commons.metrics
 
-import com.codahale.metrics.{Metric, MetricFilter, MetricRegistry}
+import com.codahale.metrics.{Metric, MetricRegistry}
 
 trait MetricsSupport {
   val metricRegistry: MetricRegistry = MetricsRegistries.metricRegistry
@@ -29,10 +29,8 @@ object MetricsRegistries {
   implicit class MetricRegistryExtension(val metricRegistry: MetricRegistry) extends AnyVal {
 
     def getOrAddGauge[T](expectedName: String, gauge: com.codahale.metrics.Gauge[T]): Boolean = {
-      val existingGauges = metricRegistry.getGauges(new MetricFilter {
-        override def matches(existingName: String, metric: Metric): Boolean = {
-          existingName.equalsIgnoreCase(expectedName)
-        }
+      val existingGauges = metricRegistry.getGauges((existingName: String, _: Metric) => {
+        existingName.equalsIgnoreCase(expectedName)
       })
 
       if (existingGauges == null || existingGauges.size() == 0) {
