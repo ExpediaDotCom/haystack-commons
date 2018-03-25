@@ -26,13 +26,13 @@ class ConfigurationLoaderSpec extends FunSpec with Matchers {
 
     it ("should load config from env variable with empty array value") {
       val envVars = Map[String, String](ConfigurationLoader.ENV_NAME_PREFIX + "TRACES_KEY_SEQUENCE" -> "[]")
-      val config = ConfigurationLoader.loadFromEnv(envVars, Set(keyName))
+      val config = ConfigurationLoader.loadFromEnv(envVars, Set(keyName), ConfigurationLoader.ENV_NAME_PREFIX)
       config.getList(keyName).size() shouldBe 0
     }
 
     it ("should load config from env variable with non-empty array value") {
       val envVars = Map[String, String](ConfigurationLoader.ENV_NAME_PREFIX + "TRACES_KEY_SEQUENCE" -> "[v1]")
-      val config = ConfigurationLoader.loadFromEnv(envVars, Set(keyName))
+      val config = ConfigurationLoader.loadFromEnv(envVars, Set(keyName), ConfigurationLoader.ENV_NAME_PREFIX)
       config.getStringList(keyName).size() shouldBe 1
       config.getStringList(keyName).get(0) shouldBe "v1"
     }
@@ -40,7 +40,7 @@ class ConfigurationLoaderSpec extends FunSpec with Matchers {
     it ("should throw runtime exception if env variable doesn't comply array value signature - [..]") {
       val envVars = Map[String, String](ConfigurationLoader.ENV_NAME_PREFIX + "TRACES_KEY_SEQUENCE" -> "v1")
       val exception = intercept[RuntimeException] {
-        ConfigurationLoader.loadFromEnv(envVars, Set(keyName))
+        ConfigurationLoader.loadFromEnv(envVars, Set(keyName), ConfigurationLoader.ENV_NAME_PREFIX)
       }
 
       exception.getMessage shouldEqual "config key is of array type, so it should start and end with '[', ']' respectively"
@@ -52,7 +52,7 @@ class ConfigurationLoaderSpec extends FunSpec with Matchers {
         ConfigurationLoader.ENV_NAME_PREFIX + "TRACES_KEY2" -> "v2",
         "NON_HAYSTACK_KEY" -> "not_interested")
 
-      val config = ConfigurationLoader.loadFromEnv(envVars, Set(keyName))
+      val config = ConfigurationLoader.loadFromEnv(envVars, Set(keyName), ConfigurationLoader.ENV_NAME_PREFIX)
       config.getStringList(keyName).size() shouldBe 1
       config.getStringList(keyName).get(0) shouldBe "v1"
       config.getString("traces.key2") shouldBe "v2"

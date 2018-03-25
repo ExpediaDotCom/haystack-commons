@@ -42,7 +42,11 @@ object ConfigurationLoader {
     */
   def loadConfigFileWithEnvOverrides(resourceName : String = "config/base.conf",
                                      envNamePrefix : String = ENV_NAME_PREFIX) : Config = {
-    val baseConfig = ConfigFactory.load("config/base.conf")
+
+    require(resourceName != null && resourceName.length > 0 , "resourceName is required")
+    require(envNamePrefix != null && envNamePrefix.length > 0 , "envNamePrefix is required")
+
+    val baseConfig = ConfigFactory.load(resourceName)
 
     val keysWithArrayValues = baseConfig.entrySet()
       .asScala
@@ -52,7 +56,7 @@ object ConfigurationLoader {
 
     val config = sys.env.get("HAYSTACK_OVERRIDES_CONFIG_PATH") match {
       case Some(path) => ConfigFactory.parseFile(new File(path)).withFallback(baseConfig).resolve()
-      case _ => loadFromEnv(sys.env, keysWithArrayValues).withFallback(baseConfig).resolve()
+      case _ => loadFromEnv(sys.env, keysWithArrayValues, envNamePrefix).withFallback(baseConfig).resolve()
     }
 
     // In key-value pairs that contain 'password' in the key, replace the value with asterisks
@@ -66,19 +70,19 @@ object ConfigurationLoader {
   /**
     * @return new config object with haystack specific environment variables
     */
-  private[haystack] def loadFromEnv(envVars: Map[String, String], keysWithArrayValues: Set[String]): Config = {
+  private[haystack] def loadFromEnv(envVars: Map[String, String],
+                                    keysWithArrayValues: Set[String],
+                                    envNamePrefix: String): Config = {
     val envMap: Map[String, Object] = envVars.filter {
-      case (envName, _) => isHaystackEnvVar(envName)
+      case (envName, _) => envName.startsWith(envNamePrefix)
     } map {
       case (envName, envValue) =>
-        val key = transformEnvVarName(envName)
+        val key = transformEnvVarName(envName, envNamePrefix)
         if (keysWithArrayValues.contains(key)) (key, transformEnvVarArrayValue(envValue)) else (key, envValue)
     }
 
     ConfigFactory.parseMap(envMap.asJava)
   }
-
-  private def isHaystackEnvVar(env: String): Boolean = env.startsWith(ENV_NAME_PREFIX)
 
   /**
     * converts the env variable to HOCON format
@@ -86,8 +90,8 @@ object ConfigurationLoader {
     * @param env environment variable name
     * @return variable name that complies with hocon key
     */
-  private def transformEnvVarName(env: String): String = {
-    env.replaceFirst(ENV_NAME_PREFIX, "").toLowerCase.replace("_", ".")
+  private def transformEnvVarName(env: String, envNamePrefix: String): String = {
+    env.replaceFirst(envNamePrefix, "").toLowerCase.replace("_", ".")
   }
 
   /**
