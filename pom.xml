@@ -83,6 +83,9 @@
         <slf4j.version>1.7.25</slf4j.version>
         <commons-codec.version>1.4</commons-codec.version>
 
+        <msgpack.version>0.8.13</msgpack.version>
+        <kafka.version>1.0.1</kafka.version>
+
         <!-- compiler properties -->
         <project.jdk.version>1.8</project.jdk.version>
         <scala.major.version>2</scala.major.version>
@@ -148,6 +151,21 @@
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
             <version>${commons-codec.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.kafka/kafka -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka_${scala.major.minor.version}</artifactId>
+            <version>${kafka.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.msgpack</groupId>
+            <artifactId>msgpack-core</artifactId>
+            <version>${msgpack.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- test dependencies -->
