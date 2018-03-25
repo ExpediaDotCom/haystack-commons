@@ -56,7 +56,10 @@ object ConfigurationLoader {
 
     val config = sys.env.get("HAYSTACK_OVERRIDES_CONFIG_PATH") match {
       case Some(path) => ConfigFactory.parseFile(new File(path)).withFallback(baseConfig).resolve()
-      case _ => loadFromEnv(sys.env, keysWithArrayValues, envNamePrefix).withFallback(baseConfig).resolve()
+      case _ => ConfigFactory
+        .parseMap(parsePropertiesFromMap(sys.env, keysWithArrayValues, envNamePrefix).asJava)
+        .withFallback(baseConfig)
+        .resolve()
     }
 
     // In key-value pairs that contain 'password' in the key, replace the value with asterisks
@@ -68,20 +71,18 @@ object ConfigurationLoader {
   }
 
   /**
-    * @return new config object with haystack specific environment variables
+    *  @return new config object with haystack specific environment variables
     */
-  private[haystack] def loadFromEnv(envVars: Map[String, String],
-                                    keysWithArrayValues: Set[String],
-                                    envNamePrefix: String): Config = {
-    val envMap: Map[String, Object] = envVars.filter {
+  private[haystack] def parsePropertiesFromMap(envVars: Map[String, String],
+                                               keysWithArrayValues: Set[String],
+                                               envNamePrefix: String): Map[String, Object] = {
+    envVars.filter {
       case (envName, _) => envName.startsWith(envNamePrefix)
     } map {
       case (envName, envValue) =>
         val key = transformEnvVarName(envName, envNamePrefix)
         if (keysWithArrayValues.contains(key)) (key, transformEnvVarArrayValue(envValue)) else (key, envValue)
     }
-
-    ConfigFactory.parseMap(envMap.asJava)
   }
 
   /**
