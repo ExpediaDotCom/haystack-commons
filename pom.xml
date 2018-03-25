@@ -85,6 +85,7 @@
 
         <msgpack.version>0.8.13</msgpack.version>
         <kafka.version>1.0.1</kafka.version>
+        <grpc.version>1.7.0</grpc.version>
 
         <!-- compiler properties -->
         <project.jdk.version>1.8</project.jdk.version>
@@ -142,6 +143,19 @@
         </dependency>
 
         <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
+            <version>${grpc.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+            <version>${grpc.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>com.codahale.metrics</groupId>
             <artifactId>metrics-core</artifactId>
             <version>${metrics-core.version}</version>
@@ -183,7 +197,7 @@
             <version>${easymock.version}</version>
             <scope>test</scope>
         </dependency>
-        
+
         <!-- required by scalatest-maven-plugin to generate HTML report -->
 
         <dependency>
@@ -197,14 +211,14 @@
 
     <build>
         <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
-        
+
         <resources>
             <resource>
                 <directory>${basedir}/src/main/resources</directory>
                 <filtering>true</filtering>
             </resource>
         </resources>
-        
+
 
         <plugins>
 
@@ -253,13 +267,25 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
+                            <protocArtifact>com.google.protobuf:protoc:3.0.0</protocArtifact>
                             <includeDirectories>
                                 <include>${project.basedir}/haystack-idl/proto</include>
+                                <include>${project.basedir}/haystack-idl/proto/api</include>
                             </includeDirectories>
                             <inputDirectories>
                                 <include>${project.basedir}/haystack-idl/proto</include>
+                                <include>${project.basedir}/haystack-idl/proto/api</include>
                             </inputDirectories>
                             <outputDirectory>${project.basedir}/target/generated-sources</outputDirectory>
+                            <outputTargets>
+                                <outputTarget>
+                                    <type>java</type>
+                                </outputTarget>
+                                <outputTarget>
+                                    <type>grpc-java</type>
+                                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.0.1</pluginArtifact>
+                                </outputTarget>
+                            </outputTargets>
                         </configuration>
                     </execution>
                 </executions>

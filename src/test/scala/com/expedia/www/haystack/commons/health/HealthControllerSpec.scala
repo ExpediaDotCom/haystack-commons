@@ -52,5 +52,5 @@ class HealthControllerSpec extends UnitTestSpec {
     }
   }
 
-  private def readStatusLine = io.Source.fromFile(statusFile).getLines().toList.head
+  private def readStatusLine = scala.io.Source.fromFile(statusFile).getLines().toList.head
 }
