@@ -17,33 +17,46 @@
 
 package com.expedia.www.haystack.commons.config
 
-import com.expedia.www.haystack.commons.unit.UnitTestSpec
+import org.scalatest.{FunSpec, Matchers}
 
-class ConfigurationLoaderSpec extends UnitTestSpec {
+class ConfigurationLoaderSpec extends FunSpec with Matchers {
 
-  "ConfigurationLoader.loadConfigFileWithEnvOverrides" should {
+  describe("configuration loader") {
+    val keyName = "traces.key.sequence"
 
-    "load a given config file as expected when no environment overrides are present" in {
-      Given("a sample HOCON conf file")
-      val file = "sample.conf"
-      When("loadConfigFileWithEnvOverrides is invoked with no environment variables")
-      val config = ConfigurationLoader.loadConfigFileWithEnvOverrides(resourceName = file)
-      Then("it should load the configuration entries as expected")
-      "influxdb.kube-system.svc" should equal(config.getString("haystack.graphite.host"))
-      2003 should equal(config.getInt("haystack.graphite.port"))
+    it ("should load config from env variable with empty array value") {
+      val envVars = Map[String, String](ConfigurationLoader.ENV_NAME_PREFIX + "TRACES_KEY_SEQUENCE" -> "[]")
+      val config = ConfigurationLoader.loadFromEnv(envVars, Set(keyName))
+      config.getList(keyName).size() shouldBe 0
+    }
+
+    it ("should load config from env variable with non-empty array value") {
+      val envVars = Map[String, String](ConfigurationLoader.ENV_NAME_PREFIX + "TRACES_KEY_SEQUENCE" -> "[v1]")
+      val config = ConfigurationLoader.loadFromEnv(envVars, Set(keyName))
+      config.getStringList(keyName).size() shouldBe 1
+      config.getStringList(keyName).get(0) shouldBe "v1"
+    }
+
+    it ("should throw runtime exception if env variable doesn't comply array value signature - [..]") {
+      val envVars = Map[String, String](ConfigurationLoader.ENV_NAME_PREFIX + "TRACES_KEY_SEQUENCE" -> "v1")
+      val exception = intercept[RuntimeException] {
+        ConfigurationLoader.loadFromEnv(envVars, Set(keyName))
+      }
+
+      exception.getMessage shouldEqual "config key is of array type, so it should start and end with '[', ']' respectively"
+    }
+
+    it ("should load config from env variable with non-empty value") {
+      val envVars = Map[String, String](
+        ConfigurationLoader.ENV_NAME_PREFIX + "TRACES_KEY_SEQUENCE" -> "[v1]",
+        ConfigurationLoader.ENV_NAME_PREFIX + "TRACES_KEY2" -> "v2",
+        "NON_HAYSTACK_KEY" -> "not_interested")
+
+      val config = ConfigurationLoader.loadFromEnv(envVars, Set(keyName))
+      config.getStringList(keyName).size() shouldBe 1
+      config.getStringList(keyName).get(0) shouldBe "v1"
+      config.getString("traces.key2") shouldBe "v2"
+      config.hasPath("non.haystack.key") shouldBe false
     }
   }
-
-  "ConfigurationLoader.parsePropertiesFromMap" should {
-    "parses a given map and returns transformed key-value that matches a given prefix" in {
-      Given("a sample map with a key-value")
-      val data = Map("FOO_HAYSTACK_GRAPHITE_HOST" -> "influxdb.kube-system.svc", "foo.bar" -> "baz")
-      When("parsePropertiesFromMap is invoked with matching prefix")
-      val config = ConfigurationLoader.parsePropertiesFromMap(data, "FOO_")
-      Then("it should transform the entries that match the prefix as expected")
-      Some("influxdb.kube-system.svc") should equal(config.get("haystack.graphite.host"))
-      None should be (config.get("foo.bar"))
-    }
-  }
-
 }

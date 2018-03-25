@@ -18,7 +18,6 @@
 
 package com.expedia.www.haystack.commons.logger
 
-import org.msgpack.core.annotations.VisibleForTesting
 import org.slf4j.{ILoggerFactory, LoggerFactory}
 
 object LoggerUtils {
@@ -33,7 +32,6 @@ object LoggerUtils {
     shutdownLoggerWithFactory(factory)
   }
 
-  @VisibleForTesting
   def shutdownLoggerWithFactory(factory: ILoggerFactory): Unit = {
     val clazz = factory.getClass
     try {

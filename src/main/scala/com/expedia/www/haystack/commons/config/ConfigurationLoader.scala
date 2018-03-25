@@ -14,70 +14,88 @@
  *     limitations under the License.
  *
  */
+
 package com.expedia.www.haystack.commons.config
 
 import java.io.File
 
-import com.typesafe.config.{Config, ConfigFactory, ConfigRenderOptions}
-import org.apache.commons.codec.binary.StringUtils
+import com.typesafe.config.{Config, ConfigFactory, ConfigRenderOptions, ConfigValueType}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 
 object ConfigurationLoader {
 
-  val ENV_NAME_PREFIX = "HAYSTACK_PROP_"
-
   private val LOGGER = LoggerFactory.getLogger(ConfigurationLoader.getClass)
 
+  private[haystack] val ENV_NAME_PREFIX = "HAYSTACK_PROP_"
+
   /**
-    * Loads a HOCON config file and overrides entries in them with values, if specified, from environment variables
-    * with given prefix
-    * For example, if the envNamePrefix given is HAYSTACK_ and if an environment variable exist with the name
-    * HAYSTACK_KAFKA_STREAMS_NUM_STREAM_THREADS, then a config entry with key kafka.streams.num.stream.threads
-    * will be added to the config object or an existing value in the config object will be overwritten
+    * Load and return the configuration
+    * if overrides_config_path env variable exists, then we load that config file and use base conf as fallback,
+    * else we load the config from env variables(prefixed with haystack) and use base conf as fallback
     *
-    * @param resourceName name of the resource file to be loaded. Default value is `config/base.conf`
-    * @param envNamePrefix env variable prefix to override config values. Default is `HAYSTACK_PROP_`
-    *
-    * @return an instance of com.typesafe.Config
     */
-  def loadConfigFileWithEnvOverrides(resourceName : String = "config/base.conf", envNamePrefix : String = ENV_NAME_PREFIX) : Config = {
+  lazy val loadAppConfig: Config = {
+    val baseConfig = ConfigFactory.load("config/base.conf")
 
-    require( envNamePrefix != null && envNamePrefix.length > 0 , "envNamePrefix is required")
-    require( resourceName != null && resourceName.length > 0 , "resourceName is required")
-
-    val baseConfig = ConfigFactory.load(resourceName)
+    val keysWithArrayValues = baseConfig.entrySet()
+      .asScala
+      .filter(_.getValue.valueType() == ConfigValueType.LIST)
+      .map(_.getKey)
+      .toSet
 
     val config = sys.env.get("HAYSTACK_OVERRIDES_CONFIG_PATH") match {
-      case Some(path) => ConfigFactory.parseFile(new File(path)).withFallback(baseConfig)
-      case _ => ConfigFactory.parseMap(parsePropertiesFromMap(sys.env, envNamePrefix).asJava).withFallback(baseConfig)
+      case Some(path) => ConfigFactory.parseFile(new File(path)).withFallback(baseConfig).resolve()
+      case _ => loadFromEnv(sys.env, keysWithArrayValues).withFallback(baseConfig).resolve()
     }
 
-    LOGGER.info(config.root().render(ConfigRenderOptions.defaults().setOriginComments(false)))
+    // In key-value pairs that contain 'password' in the key, replace the value with asterisks
+    LOGGER.info(config.root()
+      .render(ConfigRenderOptions.defaults().setOriginComments(false))
+      .replaceAll("(?i)(\\\".*password\\\"\\s*:\\s*)\\\".+\\\"", "$1********"))
 
     config
   }
 
   /**
-    * Converts a Map[String, String] to HOCON Config Object
-    * Filters only entries in the map where the keys start with the given prefix, removes the prefix
-    * and converts the key to dot notation.  For example, if the key is HAYSTACK_KAFKA_STREAMS_NUM_STREAM_THREADS
-    * and the prefix given is HAYSTACK_ then the new key will be kafka.streams.num.stream.threads
+    * @return new config object with haystack specific environment variables
     */
-  def parsePropertiesFromMap(data: Map[String, String], prefix: String) : Map[String, String] = {
-    data.filter {
-      case (envName, _) => envName.startsWith(prefix)
+  private[haystack] def loadFromEnv(envVars: Map[String, String], keysWithArrayValues: Set[String]): Config = {
+    val envMap: Map[String, Object] = envVars.filter {
+      case (envName, _) => isHaystackEnvVar(envName)
     } map {
-      case (envName, envValue) => (transformName(envName, prefix), envValue)
+      case (envName, envValue) =>
+        val key = transformEnvVarName(envName)
+        if (keysWithArrayValues.contains(key)) (key, transformEnvVarArrayValue(envValue)) else (key, envValue)
     }
+
+    ConfigFactory.parseMap(envMap.asJava)
+  }
+
+  private def isHaystackEnvVar(env: String): Boolean = env.startsWith(ENV_NAME_PREFIX)
+
+  /**
+    * converts the env variable to HOCON format
+    * for e.g. env variable HAYSTACK_KAFKA_STREAMS_NUM_STREAM_THREADS gets converted to kafka.streams.num.stream.threads
+    * @param env environment variable name
+    * @return variable name that complies with hocon key
+    */
+  private def transformEnvVarName(env: String): String = {
+    env.replaceFirst(ENV_NAME_PREFIX, "").toLowerCase.replace("_", ".")
   }
 
   /**
-    * Converts a name to HOCON format removes the prefix given
-    * for e.g. if the name given is HAYSTACK_KAFKA_STREAMS_NUM_STREAM_THREADS and
-    * prefix is HAYSTACK_ then the return string will be kafka.streams.num.stream.threads
+    * converts the env variable value to iterable object if it starts and ends with '[' and ']' respectively.
+    * @param env environment variable value
+    * @return string or iterable object
     */
-  private def transformName(name: String, prefix: String): String = name.replaceFirst(prefix, "").toLowerCase.replace("_", ".")
-
+  private def transformEnvVarArrayValue(env: String): java.util.List[String] = {
+    if (env.startsWith("[") && env.endsWith("]")) {
+      import scala.collection.JavaConverters._
+      env.substring(1, env.length - 1).split(',').filter(str => (str != null) && str.nonEmpty).toList.asJava
+    } else {
+      throw new RuntimeException("config key is of array type, so it should start and end with '[', ']' respectively")
+    }
+  }
 }
