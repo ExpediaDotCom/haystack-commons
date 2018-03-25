@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/ExpediaDotCom/haystack-commons.svg?branch=master)](https://travis-ci.org/ExpediaDotCom/haystack-commons)
+[![License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg)](https://github.com/ExpediaDotCom/haystack/blob/master/LICENSE)
+
+
 # haystack-commons
 Module with common code that is used by various haystack components
 
