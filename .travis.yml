@@ -8,7 +8,7 @@ install:
   - java -XX:+PrintFlagsFinal -version
   - mvn --version
 
-script: mvn clean verify
+script: mvn clean compile scoverage:report
 
 jdk: oraclejdk8
 

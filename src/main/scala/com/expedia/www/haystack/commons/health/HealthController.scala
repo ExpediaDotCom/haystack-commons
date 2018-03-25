@@ -16,11 +16,11 @@
  *
  */
 
-package com.expedia.www.haystack.trends.commons.health
+package com.expedia.www.haystack.commons.health
 
 import java.util.concurrent.atomic.AtomicReference
 
-import com.expedia.www.haystack.trends.commons.health.HealthStatus.HealthStatus
+import com.expedia.www.haystack.commons.health.HealthStatus.HealthStatus
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable

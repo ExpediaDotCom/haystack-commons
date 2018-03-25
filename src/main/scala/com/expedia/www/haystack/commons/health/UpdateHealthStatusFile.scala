@@ -16,12 +16,12 @@
  *
  */
 
-package com.expedia.www.haystack.trends.commons.health
+package com.expedia.www.haystack.commons.health
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
-import com.expedia.www.haystack.trends.commons.health.HealthStatus.HealthStatus
+import com.expedia.www.haystack.commons.health.HealthStatus.HealthStatus
 
 /**
   * writes the current health status to a status file. This can be used to provide the health to external system

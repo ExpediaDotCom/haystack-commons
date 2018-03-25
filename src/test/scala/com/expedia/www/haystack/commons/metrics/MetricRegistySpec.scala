@@ -15,12 +15,11 @@
  *
  */
 
-package com.expedia.www.haystack.trends.commons.unit.tests
+package com.expedia.www.haystack.commons.metrics
 
 import com.codahale.metrics.Gauge
-import com.expedia.www.haystack.trends.commons.metrics.MetricsRegistries._
-import com.expedia.www.haystack.trends.commons.metrics.MetricsSupport
-import com.expedia.www.haystack.trends.commons.unit.UnitTestSpec
+import com.expedia.www.haystack.commons.unit.UnitTestSpec
+import com.expedia.www.haystack.commons.metrics.MetricsRegistries._
 
 class MetricRegistySpec extends UnitTestSpec with MetricsSupport {
 
