@@ -19,13 +19,14 @@ package com.expedia.www.haystack.commons.config
 import java.io.File
 
 import com.typesafe.config.{Config, ConfigFactory, ConfigRenderOptions}
+import org.apache.commons.codec.binary.StringUtils
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 
 object ConfigurationLoader {
 
-  private val ENV_NAME_PREFIX = "HAYSTACK_PROP_"
+  val ENV_NAME_PREFIX = "HAYSTACK_PROP_"
 
   private val LOGGER = LoggerFactory.getLogger(ConfigurationLoader.getClass)
 
@@ -42,11 +43,15 @@ object ConfigurationLoader {
     * @return an instance of com.typesafe.Config
     */
   def loadConfigFileWithEnvOverrides(resourceName : String = "config/base.conf", envNamePrefix : String = ENV_NAME_PREFIX) : Config = {
+
+    require( envNamePrefix != null && envNamePrefix.length > 0 , "envNamePrefix is required")
+    require( resourceName != null && resourceName.length > 0 , "resourceName is required")
+
     val baseConfig = ConfigFactory.load(resourceName)
 
     val config = sys.env.get("HAYSTACK_OVERRIDES_CONFIG_PATH") match {
       case Some(path) => ConfigFactory.parseFile(new File(path)).withFallback(baseConfig)
-      case _ => parsePropertiesFromMap(sys.env, envNamePrefix).withFallback(baseConfig)
+      case _ => ConfigFactory.parseMap(parsePropertiesFromMap(sys.env, envNamePrefix).asJava).withFallback(baseConfig)
     }
 
     LOGGER.info(config.root().render(ConfigRenderOptions.defaults().setOriginComments(false)))
@@ -57,17 +62,15 @@ object ConfigurationLoader {
   /**
     * Converts a Map[String, String] to HOCON Config Object
     * Filters only entries in the map where the keys start with the given prefix, removes the prefix
-    * and converts the key to HOCON dot notation.  For example, if the key is HAYSTACK_KAFKA_STREAMS_NUM_STREAM_THREADS
+    * and converts the key to dot notation.  For example, if the key is HAYSTACK_KAFKA_STREAMS_NUM_STREAM_THREADS
     * and the prefix given is HAYSTACK_ then the new key will be kafka.streams.num.stream.threads
     */
-  def parsePropertiesFromMap(data: Map[String, String], prefix: String) : Config = {
-    val map = data.filter {
+  def parsePropertiesFromMap(data: Map[String, String], prefix: String) : Map[String, String] = {
+    data.filter {
       case (envName, _) => envName.startsWith(prefix)
     } map {
       case (envName, envValue) => (transformName(envName, prefix), envValue)
     }
-
-    ConfigFactory.parseMap(map.asJava)
   }
 
   /**
