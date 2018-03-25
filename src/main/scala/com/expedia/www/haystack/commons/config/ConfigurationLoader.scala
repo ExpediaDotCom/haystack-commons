@@ -35,8 +35,13 @@ object ConfigurationLoader {
     * if overrides_config_path env variable exists, then we load that config file and use base conf as fallback,
     * else we load the config from env variables(prefixed with haystack) and use base conf as fallback
     *
+    * @param resourceName name of the resource file to be loaded. Default value is `config/base.conf`
+    * @param envNamePrefix env variable prefix to override config values. Default is `HAYSTACK_PROP_`
+    *
+    * @return an instance of com.typesafe.Config
     */
-  lazy val loadAppConfig: Config = {
+  def loadConfigFileWithEnvOverrides(resourceName : String = "config/base.conf",
+                                     envNamePrefix : String = ENV_NAME_PREFIX) : Config = {
     val baseConfig = ConfigFactory.load("config/base.conf")
 
     val keysWithArrayValues = baseConfig.entrySet()

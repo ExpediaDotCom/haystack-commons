@@ -16,7 +16,7 @@
  */
 package com.expedia.www.haystack.commons.metrics
 
-import com.codahale.metrics.{Metric, MetricFilter, MetricRegistry}
+import com.codahale.metrics.{Metric, MetricRegistry}
 
 trait MetricsSupport {
   val metricRegistry: MetricRegistry = MetricsRegistries.metricRegistry
