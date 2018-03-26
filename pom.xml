@@ -26,7 +26,7 @@
 
     <groupId>com.expedia.www</groupId>
     <artifactId>haystack-commons</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <scm>
@@ -370,8 +370,10 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <excludePackageNames>com.expedia.open.tracing</excludePackageNames>
+                </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
