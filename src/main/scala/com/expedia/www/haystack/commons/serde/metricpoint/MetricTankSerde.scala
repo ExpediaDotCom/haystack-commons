@@ -99,7 +99,7 @@ class MetricPointDeserializer(enableMetricPointReplacement: Boolean) extends Des
   private def createTagsFromMetricKey(metricKey: String, enablePeriodReplacement: Boolean): Map[String, String] = {
     metricKey.split("\\.").drop(1).dropRight(1).grouped(2).map {
       if (enablePeriodReplacement) {
-        tuple => tuple(0) -> tuple(1).replace("___", ".")
+        tuple => tuple(0) -> tuple(1).replace("___", ".").replace("---", " ")
       } else {
         tuple => tuple(0) -> tuple(1)
       }
