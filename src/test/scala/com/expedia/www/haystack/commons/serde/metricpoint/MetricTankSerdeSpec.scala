@@ -129,6 +129,24 @@ class MetricTankSerdeSpec extends UnitTestSpec {
 
       metricTankSerde.close()
     }
+
+    "serialize and deserialize metric points with spaces or periods in operation/service names without losing information" in {
+
+      val tagWithSpaceAndPeriod = Map(TagKeys.SERVICE_NAME_KEY -> "service.name", TagKeys.OPERATION_NAME_KEY -> "special.operation name")
+
+      Given("metric point")
+      val metricTankSerde = new MetricTankSerde(true)
+      val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, tagWithSpaceAndPeriod, 80, currentTimeInSecs)
+
+      When("its serialized in the metricTank Format")
+      val serializedBytes = metricTankSerde.serializer().serialize(TOPIC_NAME, metricPoint)
+      val deserializedMetricPoint = metricTankSerde.deserializer().deserialize(TOPIC_NAME, serializedBytes)
+
+      Then("it should be encoded as message pack")
+      metricPoint shouldEqual deserializedMetricPoint
+
+      metricTankSerde.close()
+    }
   }
 
   "serializer returns null for any exception" in {
