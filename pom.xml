@@ -111,7 +111,8 @@
         <scoverage.plugin.version>1.3.0</scoverage.plugin.version>
 
         <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
-        <maven-javadoc-plugin.version>3.0.0</maven-javadoc-plugin.version>
+        <maven-javadoc-plugin.version>2.10.4</maven-javadoc-plugin.version>
+        <maven-jar-plugin-version>3.0.2</maven-jar-plugin-version>
         <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
     </properties>
@@ -377,9 +378,11 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <excludePackageNames>com.expedia.open.tracing</excludePackageNames>
-                </configuration>
+            </plugin>
+	    <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven-jar-plugin-version}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
