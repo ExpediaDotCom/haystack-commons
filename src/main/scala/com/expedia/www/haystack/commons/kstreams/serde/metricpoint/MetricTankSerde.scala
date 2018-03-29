@@ -15,7 +15,7 @@
  *
  */
 
-package com.expedia.www.haystack.commons.serde.metricpoint
+package com.expedia.www.haystack.commons.kstreams.serde.metricpoint
 
 import java.nio.ByteBuffer
 

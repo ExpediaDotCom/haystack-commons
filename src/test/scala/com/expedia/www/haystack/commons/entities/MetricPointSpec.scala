@@ -35,7 +35,7 @@ class MetricPointSpec extends UnitTestSpec {
       Given("metric point with period in service and operation name")
       val keys = Map(TagKeys.OPERATION_NAME_KEY -> OPERATION_NAME_WITH_DOT,
         TagKeys.SERVICE_NAME_KEY -> SERVICE_NAME_WITH_DOT)
-      val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, keys, 80, currentTimeInSecs)
+      val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, keys, 80, computeCurrentTimeInSecs)
 
       When("we get the metric point key with config enabled")
       val metricPointKey = metricPoint.getMetricPointKey(true)
@@ -52,7 +52,7 @@ class MetricPointSpec extends UnitTestSpec {
       Given("metric point with period in service and operation name")
       val keys = Map(TagKeys.OPERATION_NAME_KEY -> OPERATION_NAME_WITH_DOT,
         TagKeys.SERVICE_NAME_KEY -> SERVICE_NAME_WITH_DOT)
-      val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, keys, 80, currentTimeInSecs)
+      val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, keys, 80, computeCurrentTimeInSecs)
 
       When("we get the metric point key with config disabled")
       val metricPointKey = metricPoint.getMetricPointKey(false)
@@ -69,7 +69,7 @@ class MetricPointSpec extends UnitTestSpec {
       Given("metric point with operation name consisting of colon")
       val keys = Map(TagKeys.OPERATION_NAME_KEY -> OPERATION_NAME_WITH_COLON,
         TagKeys.SERVICE_NAME_KEY -> SERVICE_NAME_WITH_COLON)
-      val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, keys, 80, currentTimeInSecs)
+      val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, keys, 80, computeCurrentTimeInSecs)
 
       When("we get the metric point key")
       val metricPointKey = metricPoint.getMetricPointKey(true)

@@ -15,7 +15,7 @@
  *
  */
 
-package com.expedia.www.haystack.commons.serde.metricpoint
+package com.expedia.www.haystack.commons.kstreams.serde.metricpoint
 
 import com.expedia.www.haystack.commons.entities.{Interval, MetricPoint, MetricType, TagKeys}
 import com.expedia.www.haystack.commons.unit.UnitTestSpec
@@ -38,7 +38,7 @@ class MetricTankSerdeSpec extends UnitTestSpec {
     "serialize and deserialize metric points using messagepack" in {
 
       Given("metric point")
-      val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, metricTags, 80, currentTimeInSecs)
+      val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, metricTags, 80, computeCurrentTimeInSecs)
       val metricTankSerde = new MetricTankSerde()
 
       When("its serialized using the metricTank Serde")
@@ -55,7 +55,7 @@ class MetricTankSerdeSpec extends UnitTestSpec {
 
       Given("metric point with a 5 minute interval")
       val metricTankSerde = new MetricTankSerde(true)
-      val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, metricTags + (TagKeys.INTERVAL_KEY -> Interval.FIVE_MINUTE.name), 80, currentTimeInSecs)
+      val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, metricTags + (TagKeys.INTERVAL_KEY -> Interval.FIVE_MINUTE.name), 80, computeCurrentTimeInSecs)
 
       When("its serialized using the metricTank Serde")
       val serializedBytes = metricTankSerde.serializer().serialize(TOPIC_NAME, metricPoint)
@@ -77,7 +77,7 @@ class MetricTankSerdeSpec extends UnitTestSpec {
 
       Given("metric point without the interval tag")
       val metricTankSerde = new MetricTankSerde(true)
-      val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, metricTags, 80, currentTimeInSecs)
+      val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, metricTags, 80, computeCurrentTimeInSecs)
 
       When("its serialized using the metricTank Serde")
       val serializedBytes = metricTankSerde.serializer().serialize(TOPIC_NAME, metricPoint)
@@ -100,7 +100,7 @@ class MetricTankSerdeSpec extends UnitTestSpec {
 
       Given("metric point")
       val metricTankSerde = new MetricTankSerde(true)
-      val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, metricTags, 80, currentTimeInSecs)
+      val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, metricTags, 80, computeCurrentTimeInSecs)
 
       When("its serialized in the metricTank Format")
       val serializedBytes = metricTankSerde.serializer().serialize(TOPIC_NAME, metricPoint)
@@ -118,7 +118,7 @@ class MetricTankSerdeSpec extends UnitTestSpec {
 
       Given("metric point")
       val metricTankSerde = new MetricTankSerde(true)
-      val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, tagWithSpecialCharacters, 80, currentTimeInSecs)
+      val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, tagWithSpecialCharacters, 80, computeCurrentTimeInSecs)
 
       When("its serialized in the metricTank Format")
       val serializedBytes = metricTankSerde.serializer().serialize(TOPIC_NAME, metricPoint)
