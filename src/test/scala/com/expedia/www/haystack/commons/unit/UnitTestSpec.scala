@@ -17,11 +17,23 @@
 
 package com.expedia.www.haystack.commons.unit
 
+import com.expedia.open.tracing.Span
 import org.scalatest._
 
 trait UnitTestSpec extends WordSpec with GivenWhenThen with Matchers with BeforeAndAfterAll with BeforeAndAfterEach {
 
- protected def currentTimeInSecs: Long = {
+  protected def computeCurrentTimeInSecs: Long = {
     System.currentTimeMillis() / 1000L
   }
+
+  def generateTestSpan(startTimeInMicroseconds: Long): Span = {
+    val operationName = "testSpan"
+    val serviceName = "testService"
+    Span.newBuilder()
+      .setStartTime(startTimeInMicroseconds)
+      .setOperationName(operationName)
+      .setServiceName(serviceName)
+      .build()
+  }
+
 }
