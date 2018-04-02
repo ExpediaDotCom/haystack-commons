@@ -19,8 +19,9 @@ package com.expedia.www.haystack.commons.unit
 
 import com.expedia.open.tracing.Span
 import org.scalatest._
+import org.scalatest.easymock.EasyMockSugar
 
-trait UnitTestSpec extends WordSpec with GivenWhenThen with Matchers with BeforeAndAfterAll with BeforeAndAfterEach {
+trait UnitTestSpec extends WordSpec with GivenWhenThen with Matchers with BeforeAndAfterAll with BeforeAndAfterEach with EasyMockSugar {
 
   protected def computeCurrentTimeInSecs: Long = {
     System.currentTimeMillis() / 1000L
