@@ -8,7 +8,7 @@ class MetricPointTimestampExtractorSpec extends UnitTestSpec {
 
   "MetricPointTimestampExtractor" should {
 
-    " should extract timestamp from MetricPoint" in {
+    "extract timestamp from MetricPoint" in {
 
       Given("a metric point with some timestamp")
       val currentTimeInSecs = computeCurrentTimeInSecs
