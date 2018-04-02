@@ -1,5 +1,7 @@
 package com.expedia.www.haystack.commons.kstreams
 
+import java.util.UUID
+
 import com.expedia.www.haystack.commons.unit.UnitTestSpec
 import org.apache.kafka.clients.consumer.ConsumerRecord
 
@@ -12,7 +14,7 @@ class SpanTimestampExtractorSpec extends UnitTestSpec {
       Given("a span with some timestamp")
       val currentTimeInMicroSeconds = System.currentTimeMillis() * 1000
 
-      val span = generateTestSpan(currentTimeInMicroSeconds)
+      val span = generateTestSpan(UUID.randomUUID().toString, currentTimeInMicroSeconds, "foo", "bar", 20, client = false, server = true)
       val spanTimestampExtractor = new SpanTimestampExtractor
       val record: ConsumerRecord[AnyRef, AnyRef] = new ConsumerRecord("dummy-topic", 1, 1, "dummy-key", span)
 

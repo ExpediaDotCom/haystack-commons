@@ -17,24 +17,64 @@
 
 package com.expedia.www.haystack.commons.unit
 
-import com.expedia.open.tracing.Span
+import java.util.UUID
+
+import com.expedia.open.tracing.{Log, Span, Tag}
 import org.scalatest._
 import org.scalatest.easymock.EasyMockSugar
 
 trait UnitTestSpec extends WordSpec with GivenWhenThen with Matchers with BeforeAndAfterAll with BeforeAndAfterEach with EasyMockSugar {
 
+  val SERVER_SEND_EVENT = "ss"
+  val SERVER_RECV_EVENT = "sr"
+  val CLIENT_SEND_EVENT = "cs"
+  val CLIENT_RECV_EVENT = "cr"
   protected def computeCurrentTimeInSecs: Long = {
     System.currentTimeMillis() / 1000L
   }
 
-  def generateTestSpan(startTimeInMicroseconds: Long): Span = {
-    val operationName = "testSpan"
-    val serviceName = "testService"
-    Span.newBuilder()
-      .setStartTime(startTimeInMicroseconds)
-      .setOperationName(operationName)
-      .setServiceName(serviceName)
-      .build()
+  private[commons] def generateTestSpan(serviceName: String, operation: String, duration: Long, client: Boolean, server: Boolean): Span = {
+    generateTestSpan(UUID.randomUUID().toString, serviceName, operation, duration, client, server)
+  }
+
+  private[commons] def generateTestSpan(spanId: String, serviceName: String, operation: String, duration: Long, client: Boolean, server: Boolean): Span = {
+    val ts = System.currentTimeMillis() - (10 * 1000)
+    generateTestSpan(spanId, ts, serviceName, operation, duration, client, server)
+  }
+
+  private[commons] def generateTestSpan(spanId: String, ts: Long, serviceName: String, operation: String, duration: Long, client: Boolean, server: Boolean): Span = {
+
+
+    val spanBuilder = Span.newBuilder()
+    spanBuilder.setTraceId(UUID.randomUUID().toString)
+    spanBuilder.setSpanId(spanId)
+    spanBuilder.setServiceName(serviceName)
+    spanBuilder.setOperationName(operation)
+    spanBuilder.setStartTime(ts)
+    spanBuilder.setDuration(duration)
+
+    val logBuilder = Log.newBuilder()
+    if (client) {
+      logBuilder.setTimestamp(ts)
+      logBuilder.addFields(Tag.newBuilder().setKey("event").setVStr(CLIENT_SEND_EVENT).build())
+      spanBuilder.addLogs(logBuilder.build())
+      logBuilder.clear()
+      logBuilder.setTimestamp(ts + duration)
+      logBuilder.addFields(Tag.newBuilder().setKey("event").setVStr(CLIENT_RECV_EVENT).build())
+      spanBuilder.addLogs(logBuilder.build())
+    }
+
+    if (server) {
+      logBuilder.setTimestamp(ts)
+      logBuilder.addFields(Tag.newBuilder().setKey("event").setVStr(SERVER_RECV_EVENT).build())
+      spanBuilder.addLogs(logBuilder.build())
+      logBuilder.clear()
+      logBuilder.setTimestamp(ts + duration)
+      logBuilder.addFields(Tag.newBuilder().setKey("event").setVStr(SERVER_SEND_EVENT).build())
+      spanBuilder.addLogs(logBuilder.build())
+    }
+
+    spanBuilder.build()
   }
 
 }
