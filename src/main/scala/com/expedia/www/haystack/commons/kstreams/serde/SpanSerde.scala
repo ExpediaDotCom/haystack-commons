@@ -30,7 +30,6 @@ class SpanSerde extends Serde[Span] with MetricsSupport {
 
   override def close(): Unit = ()
 
-
   def serializer: Serializer[Span] = {
     new SpanSerializer
   }
@@ -40,7 +39,7 @@ class SpanSerde extends Serde[Span] with MetricsSupport {
   }
 }
 
-class SpanSerializer extends Serializer[Span] with MetricsSupport {
+class SpanSerializer extends Serializer[Span] {
   override def configure(configs: util.Map[String, _], b: Boolean): Unit = ()
 
   override def close(): Unit = ()
