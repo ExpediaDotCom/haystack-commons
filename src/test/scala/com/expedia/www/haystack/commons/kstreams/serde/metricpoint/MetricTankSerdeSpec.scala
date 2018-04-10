@@ -54,7 +54,7 @@ class MetricTankSerdeSpec extends UnitTestSpec {
     "serialize metricpoint with the right metric interval if present" in {
 
       Given("metric point with a 5 minute interval")
-      val metricTankSerde = new MetricTankSerde(true)
+      val metricTankSerde = new MetricTankSerde(true, false)
       val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, metricTags + (TagKeys.INTERVAL_KEY -> Interval.FIVE_MINUTE.name), 80, computeCurrentTimeInSecs)
 
       When("its serialized using the metricTank Serde")
@@ -76,7 +76,7 @@ class MetricTankSerdeSpec extends UnitTestSpec {
     "serialize metricpoint with the default interval if not present" in {
 
       Given("metric point without the interval tag")
-      val metricTankSerde = new MetricTankSerde(true)
+      val metricTankSerde = new MetricTankSerde(true, false)
       val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, metricTags, 80, computeCurrentTimeInSecs)
 
       When("its serialized using the metricTank Serde")
@@ -99,7 +99,7 @@ class MetricTankSerdeSpec extends UnitTestSpec {
     "serialize and deserialize simple metric points without loosing data" in {
 
       Given("metric point")
-      val metricTankSerde = new MetricTankSerde(true)
+      val metricTankSerde = new MetricTankSerde(true, false)
       val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, metricTags, 80, computeCurrentTimeInSecs)
 
       When("its serialized in the metricTank Format")
@@ -117,8 +117,26 @@ class MetricTankSerdeSpec extends UnitTestSpec {
       val tagWithSpecialCharacters = Map(TagKeys.SERVICE_NAME_KEY -> SERVICE_NAME, TagKeys.OPERATION_NAME_KEY -> "service:someOp")
 
       Given("metric point")
-      val metricTankSerde = new MetricTankSerde(true)
+      val metricTankSerde = new MetricTankSerde(true, false)
       val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, tagWithSpecialCharacters, 80, computeCurrentTimeInSecs)
+
+      When("its serialized in the metricTank Format")
+      val serializedBytes = metricTankSerde.serializer().serialize(TOPIC_NAME, metricPoint)
+      val deserializedMetricPoint = metricTankSerde.deserializer().deserialize(TOPIC_NAME, serializedBytes)
+
+      Then("it should be encoded as message pack")
+      metricPoint shouldEqual deserializedMetricPoint
+
+      metricTankSerde.close()
+    }
+
+    "serialize and deserialize metric points with spaces or periods in operation/service names without losing information" in {
+
+      val tagWithSpaceAndPeriod = Map(TagKeys.SERVICE_NAME_KEY -> "service.name", TagKeys.OPERATION_NAME_KEY -> "special.operation name")
+
+      Given("metric point")
+      val metricTankSerde = new MetricTankSerde(true, false)
+      val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, tagWithSpaceAndPeriod, 80, computeCurrentTimeInSecs)
 
       When("its serialized in the metricTank Format")
       val serializedBytes = metricTankSerde.serializer().serialize(TOPIC_NAME, metricPoint)
@@ -134,7 +152,7 @@ class MetricTankSerdeSpec extends UnitTestSpec {
   "serializer returns null for any exception" in {
 
     Given("MetricTankSerde and a null metric point")
-    val metricTankSerde = new MetricTankSerde(true)
+    val metricTankSerde = new MetricTankSerde(true, false)
     val metricPoint = null
 
     When("its serialized using the metricTank Serde")
@@ -148,7 +166,7 @@ class MetricTankSerdeSpec extends UnitTestSpec {
   "deserializer returns null for any exception" in {
 
     Given("MetricTankSerde and a null metric point")
-    val metricTankSerde = new MetricTankSerde(true)
+    val metricTankSerde = new MetricTankSerde(true, false)
     val metricPointBytes = null
 
     When("its deserialized using the metricTank Serde")
@@ -156,6 +174,36 @@ class MetricTankSerdeSpec extends UnitTestSpec {
 
     Then("deserializer should return null")
     deserializedBytes shouldBe null
+    metricTankSerde.close()
+  }
+
+  "base64 decode metricpoint names" in {
+    Given("MetricTankSerde and with a base64 encoded name only")
+    val metricTankSerde = new MetricTankSerde(false, true)
+    val tagWithSpaceAndPeriod = Map(TagKeys.SERVICE_NAME_KEY -> "service.name", TagKeys.OPERATION_NAME_KEY -> "special.operation name")
+    val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, tagWithSpaceAndPeriod, 80, computeCurrentTimeInSecs)
+    val serializedBytes = metricTankSerde.serializer().serialize(TOPIC_NAME, metricPoint)
+
+    When("its deserialized using the metricTank Serde")
+    val deserializedBytes = metricTankSerde.deserializer().deserialize(TOPIC_NAME, serializedBytes)
+
+    Then("it should be encoded as message pack")
+    metricPoint shouldEqual deserializedBytes
+    metricTankSerde.close()
+  }
+
+  "base64 decode and period replace metricpoint names" in {
+    Given("MetricTankSerde and with a base64 encoded name only")
+    val metricTankSerde = new MetricTankSerde(true, true)
+    val tagWithSpaceAndPeriod = Map(TagKeys.SERVICE_NAME_KEY -> "service.name", TagKeys.OPERATION_NAME_KEY -> "special.operation name")
+    val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, tagWithSpaceAndPeriod, 80, computeCurrentTimeInSecs)
+    val serializedBytes = metricTankSerde.serializer().serialize(TOPIC_NAME, metricPoint)
+
+    When("its deserialized using the metricTank Serde")
+    val deserializedBytes = metricTankSerde.deserializer().deserialize(TOPIC_NAME, serializedBytes)
+
+    Then("it should be encoded as message pack")
+    metricPoint shouldEqual deserializedBytes
     metricTankSerde.close()
   }
 }

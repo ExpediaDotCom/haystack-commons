@@ -18,9 +18,11 @@
 package com.expedia.www.haystack.commons.kstreams.serde.metricpoint
 
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 
 import com.expedia.www.haystack.commons.entities.{Interval, MetricPoint, MetricType, TagKeys}
 import com.expedia.www.haystack.commons.metrics.MetricsSupport
+import com.google.common.io.BaseEncoding
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.kafka.common.serialization.{Deserializer, Serde, Serializer}
 import org.msgpack.core.MessagePack.Code
@@ -34,16 +36,16 @@ import scala.collection.JavaConverters._
   * This class takes a metric point object and serializes it into a messagepack encoded bytestream
   * which can be directly consumed by metrictank. The serialized data is finally streamed to kafka
   */
-class MetricTankSerde(enableMetricPointReplacement: Boolean) extends Serde[MetricPoint] with MetricsSupport {
+class MetricTankSerde(enableMetricPointReplacement: Boolean, enableBase64Encoding: Boolean) extends Serde[MetricPoint] with MetricsSupport {
 
-  def this() = this(true)
+  def this() = this(true, false)
 
   override def deserializer(): MetricPointDeserializer = {
-    new MetricPointDeserializer(enableMetricPointReplacement)
+    new MetricPointDeserializer(enableMetricPointReplacement, enableBase64Encoding)
   }
 
   override def serializer(): MetricPointSerializer = {
-    new MetricPointSerializer(enableMetricPointReplacement)
+    new MetricPointSerializer(enableMetricPointReplacement, enableBase64Encoding)
   }
 
   override def configure(configs: java.util.Map[String, _], isKey: Boolean): Unit = ()
@@ -51,9 +53,9 @@ class MetricTankSerde(enableMetricPointReplacement: Boolean) extends Serde[Metri
   override def close(): Unit = ()
 }
 
-class MetricPointDeserializer(enableMetricPointReplacement: Boolean) extends Deserializer[MetricPoint] with MetricsSupport {
+class MetricPointDeserializer(enableMetricPointReplacement: Boolean, enableBase64Encoding: Boolean) extends Deserializer[MetricPoint] with MetricsSupport {
 
-  def this() = this(true)
+  def this() = this(true, false)
 
   private val metricPointDeserFailureMeter = metricRegistry.meter("metricpoint.deser.failure")
   private val TAG_DELIMETER = "="
@@ -83,7 +85,7 @@ class MetricPointDeserializer(enableMetricPointReplacement: Boolean) extends Des
         `type` = MetricType.withName(metricData.get(ValueFactory.newString(typeKey)).asStringValue().toString),
         value = metricData.get(ValueFactory.newString(valueKey)).asFloatValue().toFloat,
         epochTimeInSeconds = metricData.get(ValueFactory.newString(timeKey)).asIntegerValue().toLong,
-        tags = createTagsFromMetricKey(metricData.get(ValueFactory.newString(metricKey)).asStringValue.toString, enableMetricPointReplacement))
+        tags = createTagsFromMetricKey(metricData.get(ValueFactory.newString(metricKey)).asStringValue.toString, enableMetricPointReplacement, enableBase64Encoding))
     } catch {
       case ex: Exception =>
         /* may be log and add metric */
@@ -96,20 +98,22 @@ class MetricPointDeserializer(enableMetricPointReplacement: Boolean) extends Des
     metricKey.split("\\.").last
   }
 
-  private def createTagsFromMetricKey(metricKey: String, enablePeriodReplacement: Boolean): Map[String, String] = {
-    metricKey.split("\\.").drop(1).dropRight(1).grouped(2).map {
-      if (enablePeriodReplacement) {
-        tuple => tuple(0) -> tuple(1).replace("___", ".")
-      } else {
-        tuple => tuple(0) -> tuple(1)
+  private def createTagsFromMetricKey(metricKey: String, enablePeriodReplacement: Boolean, enableBase64Encoding: Boolean): Map[String, String] = {
+    metricKey.split("\\.").drop(1).dropRight(1).grouped(2).map((values) => {
+      if (enableBase64Encoding) {
+        values(1) = new String(BaseEncoding.base64().withPadChar('_').decode(values(1)), StandardCharsets.UTF_8)
       }
-    }.toMap
+      if (enablePeriodReplacement) {
+        values(1) = values(1).replace("___", ".")
+      }
+      Tuple2(values(0), values(1))
+    }).toMap
   }
 
   override def close(): Unit = ()
 }
 
-class MetricPointSerializer(enableMetricPointReplacement: Boolean) extends Serializer[MetricPoint] with MetricsSupport {
+class MetricPointSerializer(enableMetricPointReplacement: Boolean, enableBase64Encoding: Boolean) extends Serializer[MetricPoint] with MetricsSupport {
   private val metricPointSerFailureMeter = metricRegistry.meter("metricpoint.ser.failure")
   private val metricPointSerSuccessMeter = metricRegistry.meter("metricpoint.ser.success")
   private val DEFAULT_ORG_ID = 1
@@ -124,7 +128,7 @@ class MetricPointSerializer(enableMetricPointReplacement: Boolean) extends Seria
   private val tagsKey = "Tags"
   private[commons] val intervalKey = "Interval"
 
-  def this() = this(true)
+  def this() = this(true, false)
 
   override def configure(map: java.util.Map[String, _], b: Boolean): Unit = ()
 
@@ -133,11 +137,11 @@ class MetricPointSerializer(enableMetricPointReplacement: Boolean) extends Seria
       val packer = MessagePack.newDefaultBufferPacker()
 
       val metricData = Map[Value, Value](
-        ValueFactory.newString(idKey) -> ValueFactory.newString(s"$DEFAULT_ORG_ID.${DigestUtils.md5Hex(metricPoint.getMetricPointKey(enableMetricPointReplacement).getBytes)}"),
-        ValueFactory.newString(nameKey) -> ValueFactory.newString(metricPoint.getMetricPointKey(enableMetricPointReplacement)),
+        ValueFactory.newString(idKey) -> ValueFactory.newString(s"$DEFAULT_ORG_ID.${DigestUtils.md5Hex(metricPoint.getMetricPointKey(enableMetricPointReplacement, enableBase64Encoding).getBytes)}"),
+        ValueFactory.newString(nameKey) -> ValueFactory.newString(metricPoint.getMetricPointKey(enableMetricPointReplacement, enableBase64Encoding)),
         ValueFactory.newString(orgIdKey) -> ValueFactory.newInteger(DEFAULT_ORG_ID),
         ValueFactory.newString(intervalKey) -> new ImmutableSignedLongValueImpl(retrieveInterval(metricPoint)),
-        ValueFactory.newString(metricKey) -> ValueFactory.newString(metricPoint.getMetricPointKey(enableMetricPointReplacement)),
+        ValueFactory.newString(metricKey) -> ValueFactory.newString(metricPoint.getMetricPointKey(enableMetricPointReplacement, enableBase64Encoding)),
         ValueFactory.newString(valueKey) -> ValueFactory.newFloat(metricPoint.value),
         ValueFactory.newString(timeKey) -> new ImmutableSignedLongValueImpl(metricPoint.epochTimeInSeconds),
         ValueFactory.newString(typeKey) -> ValueFactory.newString(metricPoint.`type`.toString)
@@ -153,7 +157,6 @@ class MetricPointSerializer(enableMetricPointReplacement: Boolean) extends Seria
         null
     }
   }
-
 
   //Retrieves the interval in case its present in the tags else uses the default interval
   def retrieveInterval(metricPoint: MetricPoint): Int = {
