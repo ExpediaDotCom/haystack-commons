@@ -19,6 +19,7 @@ import java.util
  *      limitations under the License.
  *
  */
+
 import com.expedia.open.tracing.Span
 import com.expedia.www.haystack.commons.metrics.MetricsSupport
 import org.apache.kafka.common.serialization.{Deserializer, Serde, Serializer}
@@ -29,15 +30,8 @@ class SpanSerde extends Serde[Span] with MetricsSupport {
 
   override def close(): Unit = ()
 
-
   def serializer: Serializer[Span] = {
-    new Serializer[Span] {
-      override def configure(configs: util.Map[String, _], b: Boolean): Unit = ()
-
-      override def close(): Unit = ()
-
-      override def serialize(topic: String, obj: Span): Array[Byte] = if (obj != null) obj.toByteArray else null
-    }
+    new SpanSerializer
   }
 
   def deserializer: Deserializer[Span] = {
@@ -45,7 +39,15 @@ class SpanSerde extends Serde[Span] with MetricsSupport {
   }
 }
 
-class SpanDeserializer extends Deserializer[Span] with MetricsSupport  {
+class SpanSerializer extends Serializer[Span] {
+  override def configure(configs: util.Map[String, _], b: Boolean): Unit = ()
+
+  override def close(): Unit = ()
+
+  override def serialize(topic: String, obj: Span): Array[Byte] = if (obj != null) obj.toByteArray else null
+}
+
+class SpanDeserializer extends Deserializer[Span] with MetricsSupport {
   private val spanSerdeMeter = metricRegistry.meter("span.serde.failure")
 
   override def configure(configs: util.Map[String, _], b: Boolean): Unit = ()
