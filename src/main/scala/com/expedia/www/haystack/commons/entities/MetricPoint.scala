@@ -30,9 +30,6 @@ import com.google.common.io.BaseEncoding
   * @param epochTimeInSeconds : epochTime in seconds for when the event is generated
   */
 case class MetricPoint(metric: String, `type`: MetricType, tags: Map[String, String], value: Float, epochTimeInSeconds: Long) {
-  def getMetricPointKey(enablePeriodReplacement: Boolean): String = {
-    getMetricPointKey(enablePeriodReplacement, false)
-  }
 
   def getMetricPointKey(enablePeriodReplacement: Boolean, enableBase64Encoding: Boolean): String = {
     val metricTags = tags.foldLeft("")((tag, tuple) => {

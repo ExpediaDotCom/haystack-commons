@@ -40,7 +40,7 @@ class MetricPointSpec extends UnitTestSpec {
       val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, keys, 80, computeCurrentTimeInSecs)
 
       When("we get the metric point key with config enabled")
-      val metricPointKey = metricPoint.getMetricPointKey(true)
+      val metricPointKey = metricPoint.getMetricPointKey(true, false)
 
       Then("metric point key should have value with period replaced with underscore")
       metricPointKey shouldEqual
@@ -57,7 +57,7 @@ class MetricPointSpec extends UnitTestSpec {
       val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, keys, 80, computeCurrentTimeInSecs)
 
       When("we get the metric point key with config disabled")
-      val metricPointKey = metricPoint.getMetricPointKey(false)
+      val metricPointKey = metricPoint.getMetricPointKey(false, false)
 
       Then("metric point key should have value with period replaced with underscore")
       metricPointKey shouldEqual
@@ -111,7 +111,7 @@ class MetricPointSpec extends UnitTestSpec {
       val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, keys, 80, computeCurrentTimeInSecs)
 
       When("we get the metric point key")
-      val metricPointKey = metricPoint.getMetricPointKey(true)
+      val metricPointKey = metricPoint.getMetricPointKey(true, false)
 
       Then("metric point key should have value with only period replaced with underscore and colon retained")
       metricPointKey shouldEqual
