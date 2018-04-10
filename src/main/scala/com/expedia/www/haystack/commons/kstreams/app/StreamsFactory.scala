@@ -59,7 +59,13 @@ class StreamsFactory(topologySupplier: Supplier[Topology], streamsConfig: Stream
     streams.setStateListener(listener)
     streams.setUncaughtExceptionHandler(listener)
     streams.cleanUp()
-    new ManagedKafkaStreams(streams)
+
+    val timeOut = Option(streamsConfig.getInt(StreamsConfig.REQUEST_TIMEOUT_MS_CONFIG)) match {
+      case Some(v) if v > 0 =>  v / 1000
+      case _ => 5
+    }
+
+    new ManagedKafkaStreams(streams, timeOut)
   }
 
   private def checkConsumerTopic(): Unit = {
