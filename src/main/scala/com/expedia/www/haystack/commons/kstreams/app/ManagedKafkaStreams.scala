@@ -17,6 +17,7 @@
  */
 package com.expedia.www.haystack.commons.kstreams.app
 
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 import org.apache.kafka.streams.KafkaStreams
@@ -24,12 +25,23 @@ import org.apache.kafka.streams.KafkaStreams
 /**
   * Simple service wrapper over `KafkaStreams` to manage the life cycle of the
   * instance.
+  *
   * @param kafkaStreams underlying KafkaStreams instance that needs to be
   *                     managed
+  * @param closeWaitInSeconds time to wait in seconds while stopping KafkaStreams
   */
-class ManagedKafkaStreams(kafkaStreams: KafkaStreams) extends ManagedService {
+class ManagedKafkaStreams(kafkaStreams: KafkaStreams, closeWaitInSeconds: Int) extends ManagedService {
   require(kafkaStreams != null)
   private val isRunning: AtomicBoolean = new AtomicBoolean(false)
+
+  /**
+    * This creates a managed KafkaStreams that waits for ever at
+    * stop. To provide a specific timeout use the other constructor
+    *
+    * @param kafkaStreams underlying KafkaStreams instance that needs to be
+    *                     managed
+    */
+  def this(kafkaStreams: KafkaStreams) = this(kafkaStreams, 0)
 
   /**
     * @see ManagedService.start
@@ -44,7 +56,7 @@ class ManagedKafkaStreams(kafkaStreams: KafkaStreams) extends ManagedService {
     */
   override def stop(): Unit = {
     if (isRunning.getAndSet(false)) {
-      kafkaStreams.close()
+      kafkaStreams.close(closeWaitInSeconds, TimeUnit.SECONDS)
     }
   }
 
