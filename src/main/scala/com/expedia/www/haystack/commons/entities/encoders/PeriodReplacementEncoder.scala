@@ -14,14 +14,14 @@
  *     limitations under the License.
  *
  */
-package com.expedia.www.haystack.commons.entities.encodings
+package com.expedia.www.haystack.commons.entities.encoders
 
-class NoopEncoding extends Encoding {
+class PeriodReplacementEncoder extends Encoder {
   def encode(value: String): String = {
-    value
+    value.replace(".", "___")
   }
 
   def decode(value: String): String = {
-    value
+    value.replace("___", ".")
   }
 }

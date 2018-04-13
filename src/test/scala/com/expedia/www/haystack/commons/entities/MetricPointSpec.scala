@@ -17,7 +17,7 @@
 
 package com.expedia.www.haystack.commons.entities
 
-import com.expedia.www.haystack.commons.entities.encodings.{Base64Encoding, NoopEncoding, PeriodReplacementEncoding}
+import com.expedia.www.haystack.commons.entities.encoders.{Base64Encoder, NoopEncoder, PeriodReplacementEncoder}
 import com.expedia.www.haystack.commons.unit.UnitTestSpec
 
 
@@ -41,7 +41,7 @@ class MetricPointSpec extends UnitTestSpec {
       val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, keys, 80, computeCurrentTimeInSecs)
 
       When("we get the metric point key with config enabled")
-      val metricPointKey = metricPoint.getMetricPointKey(new PeriodReplacementEncoding)
+      val metricPointKey = metricPoint.getMetricPointKey(new PeriodReplacementEncoder)
 
       Then("metric point key should have value with period replaced with underscore")
       metricPointKey shouldEqual
@@ -58,7 +58,7 @@ class MetricPointSpec extends UnitTestSpec {
       val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, keys, 80, computeCurrentTimeInSecs)
 
       When("we get the metric point key with config disabled")
-      val metricPointKey = metricPoint.getMetricPointKey(new NoopEncoding)
+      val metricPointKey = metricPoint.getMetricPointKey(new NoopEncoder)
 
       Then("metric point key should have value with period replaced with underscore")
       metricPointKey shouldEqual
@@ -76,7 +76,7 @@ class MetricPointSpec extends UnitTestSpec {
         TagKeys.STATS_KEY -> "*_95")
       val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, keys, 80, computeCurrentTimeInSecs)
       When("we get the metric point key with proper config")
-      val metricPointKey = metricPoint.getMetricPointKey(new Base64Encoding)
+      val metricPointKey = metricPoint.getMetricPointKey(new Base64Encoder)
 
       Then("metric point key should have value with period replaced with underscore")
       metricPointKey shouldEqual
@@ -93,7 +93,7 @@ class MetricPointSpec extends UnitTestSpec {
       val metricPoint = MetricPoint(DURATION_METRIC_NAME, MetricType.Gauge, keys, 80, computeCurrentTimeInSecs)
 
       When("we get the metric point key")
-      val metricPointKey = metricPoint.getMetricPointKey(new PeriodReplacementEncoding)
+      val metricPointKey = metricPoint.getMetricPointKey(new PeriodReplacementEncoder)
 
       Then("metric point key should have value with only period replaced with underscore and colon retained")
       metricPointKey shouldEqual

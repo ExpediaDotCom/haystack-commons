@@ -14,19 +14,11 @@
  *     limitations under the License.
  *
  */
-package com.expedia.www.haystack.commons.entities.encodings
+package com.expedia.www.haystack.commons.entities.encoders
 
-import java.nio.charset.StandardCharsets
+trait Encoder {
 
-import com.google.common.base.Charsets
-import com.google.common.io.BaseEncoding
+  def encode(value: String): String
 
-class Base64Encoding extends Encoding {
-  def encode(value: String): String = {
-    BaseEncoding.base64().withPadChar('_').encode(value.getBytes(Charsets.UTF_8))
-  }
-
-  def decode(value: String): String = {
-    new String(BaseEncoding.base64().withPadChar('_').decode(value), StandardCharsets.UTF_8)
-  }
+  def decode(value: String): String
 }

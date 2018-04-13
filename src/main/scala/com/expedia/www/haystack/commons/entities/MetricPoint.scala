@@ -17,7 +17,7 @@
 package com.expedia.www.haystack.commons.entities
 
 import com.expedia.www.haystack.commons.entities.MetricType.MetricType
-import com.expedia.www.haystack.commons.entities.encodings.Encoding
+import com.expedia.www.haystack.commons.entities.encoders.Encoder
 
 /**
   * The metricpoint object adheres to the metrics 2.0 specifications
@@ -30,11 +30,11 @@ import com.expedia.www.haystack.commons.entities.encodings.Encoding
   */
 case class MetricPoint(metric: String, `type`: MetricType, tags: Map[String, String], value: Float, epochTimeInSeconds: Long) {
 
-  def getMetricPointKey(encoding: Encoding): String = {
+  def getMetricPointKey(encoder: Encoder): String = {
     val metricTags = tags.foldLeft("")((tag, tuple) => {
       var tuple2 = tuple._2
       if ("serviceName".equalsIgnoreCase(tuple._1) || "operationName".equalsIgnoreCase(tuple._1)) {
-        tuple2 = encoding.encode(tuple._2)
+        tuple2 = encoder.encode(tuple._2)
       }
       tag + s"${tuple._1}.$tuple2."
     })

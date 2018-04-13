@@ -14,14 +14,19 @@
  *     limitations under the License.
  *
  */
-package com.expedia.www.haystack.commons.entities.encodings
+package com.expedia.www.haystack.commons.entities.encoders
 
-class PeriodReplacementEncoding extends Encoding {
+import java.nio.charset.StandardCharsets
+
+import com.google.common.base.Charsets
+import com.google.common.io.BaseEncoding
+
+class Base64Encoder extends Encoder {
   def encode(value: String): String = {
-    value.replace(".", "___")
+    BaseEncoding.base64().withPadChar('_').encode(value.getBytes(Charsets.UTF_8))
   }
 
   def decode(value: String): String = {
-    value.replace("___", ".")
+    new String(BaseEncoding.base64().withPadChar('_').decode(value), StandardCharsets.UTF_8)
   }
 }

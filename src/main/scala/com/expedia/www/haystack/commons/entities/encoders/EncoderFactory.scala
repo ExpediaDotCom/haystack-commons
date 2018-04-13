@@ -14,11 +14,19 @@
  *     limitations under the License.
  *
  */
-package com.expedia.www.haystack.commons.entities.encodings
+package com.expedia.www.haystack.commons.entities.encoders
 
-trait Encoding {
+object EncoderFactory {
+  final val BASE_64 = "base64"
+  final val PERIOD_REPLACEMENT = "periodReplacement"
 
-  def encode(value: String): String
-
-  def decode(value: String): String
+  def newInstance(key: String): Encoder = {
+    if (BASE_64.equalsIgnoreCase(key)) {
+      new Base64Encoder()
+    } else if (PERIOD_REPLACEMENT.equalsIgnoreCase(key)) {
+      new PeriodReplacementEncoder()
+    } else {
+      new NoopEncoder()
+    }
+  }
 }
