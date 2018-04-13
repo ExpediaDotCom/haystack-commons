@@ -17,6 +17,7 @@
 package com.expedia.www.haystack.commons.entities
 
 import com.expedia.www.haystack.commons.entities.MetricType.MetricType
+import com.expedia.www.haystack.commons.entities.encoders.Encoder
 
 /**
   * The metricpoint object adheres to the metrics 2.0 specifications
@@ -29,16 +30,14 @@ import com.expedia.www.haystack.commons.entities.MetricType.MetricType
   */
 case class MetricPoint(metric: String, `type`: MetricType, tags: Map[String, String], value: Float, epochTimeInSeconds: Long) {
 
-  def getMetricPointKey(enablePeriodReplacement: Boolean): String = {
-   val metricTags =  if (enablePeriodReplacement) {
-      tags.foldLeft("")((tag, tuple) => {
-        tag + s"${tuple._1}.${tuple._2.replace(".", "___")}."
-      })
-    } else {
-      tags.foldLeft("")((tag, tuple) => {
-        tag + s"${tuple._1}.${tuple._2}."
-      })
-    }
+  def getMetricPointKey(encoder: Encoder): String = {
+    val metricTags = tags.foldLeft("")((tag, tuple) => {
+      var tuple2 = tuple._2
+      if ("serviceName".equalsIgnoreCase(tuple._1) || "operationName".equalsIgnoreCase(tuple._1)) {
+        tuple2 = encoder.encode(tuple._2)
+      }
+      tag + s"${tuple._1}.$tuple2."
+    })
     s"haystack.$metricTags$metric"
   }
 }
@@ -53,7 +52,6 @@ object MetricType extends Enumeration {
   val Rate = Value("rate")
 }
 
-
 /*
 The Tag keys are according to metrics 2.0 specifications see http://metrics20.org/spec/#tag-keys
  */
@@ -65,6 +63,3 @@ object TagKeys {
   val ERROR_KEY = "error"
   val INTERVAL_KEY = "interval"
 }
-
-
-

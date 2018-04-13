@@ -36,21 +36,23 @@ import scala.util.Try
   *
   * @param topologySupplier  A supplier that creates and returns a Kafka Stream Topology
   * @param streamsConfig Configuration instance for KafkaStreams
-  * @param consumerTopicName Optional consuming topic name
+  * @param consumerTopic Optional consuming topic name
   */
-class StreamsFactory(topologySupplier: Supplier[Topology], streamsConfig: StreamsConfig, consumerTopicName: Option[String]) {
+class StreamsFactory(topologySupplier: Supplier[Topology], streamsConfig: StreamsConfig, consumerTopic: String) {
 
   require(topologySupplier != null, "streamsBuilder is required")
   require(streamsConfig != null, "streamsConfig is required")
 
-  def this(streamsSupplier: Supplier[Topology], streamsConfig: StreamsConfig) = this(streamsSupplier, streamsConfig, None)
+  val consumerTopicName = Option(consumerTopic)
+
+  def this(streamsSupplier: Supplier[Topology], streamsConfig: StreamsConfig) = this(streamsSupplier, streamsConfig, null)
 
   private val LOGGER = LoggerFactory.getLogger(classOf[StreamsFactory])
 
   /**
-    *
-    * @param listener
-    * @return
+    * creates a new instance of KafkaStreams application wrapped as a {@link ManagedService} instance
+    * @param listener instance of StateChangeListener that observes KafkaStreams state changes
+    * @return instance of ManagedService
     */
   def create(listener: StateChangeListener): ManagedService = {
     checkConsumerTopic()
