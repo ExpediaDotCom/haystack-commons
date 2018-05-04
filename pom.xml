@@ -106,7 +106,7 @@
 
         <!-- plugin properties -->
         <maven-protobuf-plugin.version>3.3.0.1</maven-protobuf-plugin.version>
-        <maven-scala-plugin.version>3.2.1</maven-scala-plugin.version>
+        <scala-maven-plugin.version>3.3.2</scala-maven-plugin.version>
         <maven-scalatest-plugin.version>1.0</maven-scalatest-plugin.version>
         <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
         <maven-resources-plugin.version>2.6</maven-resources-plugin.version>
@@ -274,7 +274,7 @@
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>${maven-scala-plugin.version}</version>
+                <version>${scala-maven-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>scala-compile-first</id>
