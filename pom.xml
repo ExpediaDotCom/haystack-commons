@@ -26,7 +26,7 @@
 
     <groupId>com.expedia.www</groupId>
     <artifactId>haystack-commons</artifactId>
-    <version>1.0.13-SNAPSHOT</version>
+    <version>1.0.14-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <scm>
@@ -82,6 +82,8 @@
         <protobuf.version>3.3.1</protobuf.version>
         <slf4j.version>1.7.25</slf4j.version>
         <commons-codec.version>1.4</commons-codec.version>
+        <libphonenumber-version>8.9.2</libphonenumber-version>
+        <chlorine-finder-version>1.1.5</chlorine-finder-version>
 
         <msgpack.version>0.8.13</msgpack.version>
         <kafka.version>1.0.1</kafka.version>
@@ -99,10 +101,13 @@
         <pegdown.version>1.6.0</pegdown.version>
         <scalatest.version>3.0.3</scalatest.version>
         <easymock.version>3.4</easymock.version>
+        <junit-version>4.12</junit-version>
+        <mockito-version>1.9.5</mockito-version>
 
         <!-- plugin properties -->
+        <build-helper-maven-plugin.version>1.12</build-helper-maven-plugin.version>
         <maven-protobuf-plugin.version>3.3.0.1</maven-protobuf-plugin.version>
-        <maven-scala-plugin.version>3.2.1</maven-scala-plugin.version>
+        <scala-maven-plugin.version>3.3.2</scala-maven-plugin.version>
         <maven-scalatest-plugin.version>1.0</maven-scalatest-plugin.version>
         <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
         <maven-resources-plugin.version>2.6</maven-resources-plugin.version>
@@ -120,9 +125,35 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.googlecode.libphonenumber</groupId>
+            <artifactId>libphonenumber</artifactId>
+            <version>${libphonenumber-version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.typesafe</groupId>
             <artifactId>config</artifactId>
             <version>${typesafe-config.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>${build-helper-maven-plugin.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-nop</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-jdk14</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -141,6 +172,12 @@
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
             <version>${protobuf.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.dataapps.chlorine</groupId>
+            <artifactId>chlorine-finder</artifactId>
+            <version>${chlorine-finder-version}</version>
         </dependency>
 
         <dependency>
@@ -206,6 +243,20 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>${mockito-version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit-version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- required by scalatest-maven-plugin to generate HTML report -->
 
         <dependency>
@@ -229,7 +280,24 @@
 
 
         <plugins>
-
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>${build-helper-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${basedir}/src/main/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -244,7 +312,7 @@
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>${maven-scala-plugin.version}</version>
+                <version>${scala-maven-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>scala-compile-first</id>
