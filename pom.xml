@@ -26,7 +26,7 @@
 
     <groupId>com.expedia.www</groupId>
     <artifactId>haystack-commons</artifactId>
-    <version>1.0.13-SNAPSHOT</version>
+    <version>1.0.14-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <scm>
@@ -82,6 +82,8 @@
         <protobuf.version>3.3.1</protobuf.version>
         <slf4j.version>1.7.25</slf4j.version>
         <commons-codec.version>1.4</commons-codec.version>
+        <libphonenumber-version>8.9.2</libphonenumber-version>
+        <chlorine-finder-version>1.1.5</chlorine-finder-version>
 
         <msgpack.version>0.8.13</msgpack.version>
         <kafka.version>1.0.1</kafka.version>
@@ -99,6 +101,8 @@
         <pegdown.version>1.6.0</pegdown.version>
         <scalatest.version>3.0.3</scalatest.version>
         <easymock.version>3.4</easymock.version>
+        <junit-version>4.12</junit-version>
+        <mockito-version>1.9.5</mockito-version>
 
         <!-- plugin properties -->
         <maven-protobuf-plugin.version>3.3.0.1</maven-protobuf-plugin.version>
@@ -119,6 +123,12 @@
 
 
     <dependencies>
+        <dependency>
+            <groupId>com.googlecode.libphonenumber</groupId>
+            <artifactId>libphonenumber</artifactId>
+            <version>${libphonenumber-version}</version>
+        </dependency>
+
         <dependency>
             <groupId>com.typesafe</groupId>
             <artifactId>config</artifactId>
@@ -141,6 +151,12 @@
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
             <version>${protobuf.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.dataapps.chlorine</groupId>
+            <artifactId>chlorine-finder</artifactId>
+            <version>${chlorine-finder-version}</version>
         </dependency>
 
         <dependency>
@@ -203,6 +219,20 @@
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>
             <version>${easymock.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>${mockito-version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit-version}</version>
             <scope>test</scope>
         </dependency>
 
