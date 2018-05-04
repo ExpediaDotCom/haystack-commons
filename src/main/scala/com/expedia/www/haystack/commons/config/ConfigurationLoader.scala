@@ -55,7 +55,13 @@ object ConfigurationLoader {
       .toSet
 
     val config = sys.env.get("HAYSTACK_OVERRIDES_CONFIG_PATH") match {
-      case Some(path) => ConfigFactory.parseFile(new File(path)).withFallback(baseConfig).resolve()
+      case Some(overrideConfigPath) =>
+        val overrideConfig = ConfigFactory.load(overrideConfigPath)
+        ConfigFactory
+          .parseMap(parsePropertiesFromMap(sys.env, keysWithArrayValues, envNamePrefix).asJava)
+          .withFallback(overrideConfig)
+          .withFallback(baseConfig)
+          .resolve()
       case _ => ConfigFactory
         .parseMap(parsePropertiesFromMap(sys.env, keysWithArrayValues, envNamePrefix).asJava)
         .withFallback(baseConfig)
