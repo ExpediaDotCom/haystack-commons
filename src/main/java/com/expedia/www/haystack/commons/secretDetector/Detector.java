@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Finds that tag keys and field keys in a Span that contain secrets.
  */
+@SuppressWarnings("WeakerAccess")
 public class Detector implements ValueMapper<Span, Iterable<String>> {
     private static final String TEXT_TEMPLATE =
             "Confidential data has been found in a span: service [%s] operation [%s] span [%s] trace [%s] tag(s) [%s]";
@@ -69,8 +70,7 @@ public class Detector implements ValueMapper<Span, Iterable<String>> {
         this.application = application;
     }
 
-    @VisibleForTesting
-    Map<String, List<String>> findSecrets(Span span) {
+    public Map<String, List<String>> findSecrets(Span span) {
         final Map<String, List<String>> mapOfTypeToKeysOfSecrets = new HashMap<>();
         findSecretsInTags(mapOfTypeToKeysOfSecrets, span);
         findSecretsInLogFields(mapOfTypeToKeysOfSecrets, span);

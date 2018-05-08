@@ -60,7 +60,7 @@ public class S3ConfigFetcher {
     @VisibleForTesting
     AtomicBoolean isUpdateInProgress = new AtomicBoolean(false);
 
-    S3ConfigFetcher(Logger s3ConfigFetcherLogger,
+    public S3ConfigFetcher(Logger s3ConfigFetcherLogger,
                     WhiteListConfig whiteListConfig,
                     AmazonS3 amazonS3,
                     Factory s3ConfigFetcherFactory) {
@@ -71,7 +71,7 @@ public class S3ConfigFetcher {
         this.factory = s3ConfigFetcherFactory;
     }
 
-    Map<String, Map<String, Map<String, Set<String>>>> getWhiteListItems() {
+    public Map<String, Map<String, Map<String, Set<String>>>> getWhiteListItems() {
         final long now = factory.createCurrentTimeMillis();
         if (now - lastUpdateTime.get() > ONE_HOUR) {
             if (isUpdateInProgress.compareAndSet(false, true)) {
@@ -135,7 +135,7 @@ public class S3ConfigFetcher {
         return factory.createBufferedReader(inputStreamReader);
     }
 
-    boolean isTagInWhiteList(String finderName, String serviceName, String operationName, String tagName) {
+    public boolean isTagInWhiteList(String finderName, String serviceName, String operationName, String tagName) {
         final Map<String, Map<String, Map<String, Set<String>>>> finderNameMap = getWhiteListItems();
         final Map<String, Map<String, Set<String>>> serviceNameMap = finderNameMap.get(finderName);
         if (serviceNameMap != null) {
