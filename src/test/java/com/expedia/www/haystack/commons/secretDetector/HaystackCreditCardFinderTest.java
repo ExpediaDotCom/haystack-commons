@@ -19,8 +19,6 @@ package com.expedia.www.haystack.commons.secretDetector;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Random;
-
 import static com.expedia.www.haystack.commons.secretDetector.HaystackCompositeCreditCardFinder.AMEX_PATTERN;
 import static com.expedia.www.haystack.commons.secretDetector.HaystackCompositeCreditCardFinder.DINERS_CLUB_1_PATTERN;
 import static com.expedia.www.haystack.commons.secretDetector.HaystackCompositeCreditCardFinder.DINERS_CLUB_2_PATTERN;
@@ -29,12 +27,12 @@ import static com.expedia.www.haystack.commons.secretDetector.HaystackCompositeC
 import static com.expedia.www.haystack.commons.secretDetector.HaystackCompositeCreditCardFinder.JCB_2_PATTERN;
 import static com.expedia.www.haystack.commons.secretDetector.HaystackCompositeCreditCardFinder.MASTERCARD_PATTERN;
 import static com.expedia.www.haystack.commons.secretDetector.HaystackCompositeCreditCardFinder.VISA_PATTERN;
+import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCommonCode.RANDOM;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class HaystackCreditCardFinderTest {
     static final String FAKE_VISA_NUMBER_THAT_PASSES_LUHN = "4640-1234-5678-9120";
-    private static final Random RANDOM = new Random();
     private static final String NAME = RANDOM.nextLong() + "NAME";
     private static final String FAKE_VISA_NUMBER_THAT_DOES_NOT_PASS_LUHN = "4640-1234-5678-9123";
     private static final String FAKE_MC_NUMBER_THAT_PASSES_LUHN = "5500-0000 00000004";
