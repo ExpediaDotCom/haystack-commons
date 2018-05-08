@@ -1,6 +1,8 @@
 # Release Notes
 
-## 1.0.16 / 2018-05-08 Make some ,migrated methods public
+## 1.0.17 / 2018-05-08 Make S3ConfigFetcher.Factory class public
+
+## 1.0.16 / 2018-05-08 Make some migrated methods public
 These methods were package private in haystack-pipes but need to be public after being moved.
 
 ## 1.0.15 / 2018-05-08 More Java classes from secret-detector

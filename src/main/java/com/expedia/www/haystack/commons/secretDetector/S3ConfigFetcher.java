@@ -171,13 +171,13 @@ public class S3ConfigFetcher {
         throw new InvalidWhitelistItemInputException(line);
     }
 
-    static class InvalidWhitelistItemInputException extends Exception {
+    public static class InvalidWhitelistItemInputException extends Exception {
         InvalidWhitelistItemInputException(String line) {
             super(String.format(INVALID_DATA_MSG, line));
         }
     }
 
-    static class Factory {
+    public static class Factory {
         long createCurrentTimeMillis() {
             return System.currentTimeMillis();
         }
