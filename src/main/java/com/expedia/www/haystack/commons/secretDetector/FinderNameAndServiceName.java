@@ -18,6 +18,7 @@ package com.expedia.www.haystack.commons.secretDetector;
 
 import java.util.Objects;
 
+@SuppressWarnings("WeakerAccess")
 public class FinderNameAndServiceName {
     private final String finderName;
     private final String serviceName;
@@ -27,11 +28,11 @@ public class FinderNameAndServiceName {
         this.serviceName = serviceName;
     }
 
-    String getFinderName() {
+    public String getFinderName() {
         return finderName;
     }
 
-    String getServiceName() {
+    public String getServiceName() {
         return serviceName;
     }
 

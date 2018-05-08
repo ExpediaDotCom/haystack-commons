@@ -1,6 +1,9 @@
 # Release Notes
 
-## 1.0.15 / 2018-05-08 More ªJava classes from secret-detector
+## 1.0.16 / 2018-05-08 Make some ,migrated methods public
+These methods were package private in haystack-pipes but need to be public after being moved.
+
+## 1.0.15 / 2018-05-08 More Java classes from secret-detector
 Copy some more classes from haystack-pipes/pipes-commons:
 * Detector
 * FinderNameAndServiceName
