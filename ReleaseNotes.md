@@ -1,6 +1,15 @@
 # Release Notes
 
-## 1.0.14 / 2018-05-04 No changes
+## 1.0.15 / 2018-05-08 More ªJava classes from secret-detector
+Copy some more classes from haystack-pipes/pipes-commons:
+* Detector
+* FinderNameAndServiceName
+* S3ConfigFetcher
+* WhiteListConfig
+* WhiteListItem
+Also copied some unit tests that were for the above classes and classes from the 1.0.14 change.
+
+## 1.0.14 / 2018-05-04 Java classes from secret-detector
 Copy four secret finders from haystack-pipes/pipes-commons:
 * HaystackCompositeCreditCardFinder
 * HaystackCreditCardFinder

@@ -6,11 +6,11 @@
 		<enabled>true</enabled>
 	</finder>
 	<finder>
-		<class>com.expedia.www.haystack.pipes.secretDetector.actions.HaystackPhoneNumberFinder</class>
+		<class>com.expedia.www.haystack.commons.secretDetector.HaystackPhoneNumberFinder</class>
 		<enabled>true</enabled>
 	</finder>
 	<finder>
-		<class>com.expedia.www.haystack.pipes.secretDetector.HaystackCompositeCreditCardFinder</class>
+		<class>com.expedia.www.haystack.commons.secretDetector.HaystackCompositeCreditCardFinder</class>
 		<enabled>true</enabled>
 	</finder>
 	<finder>
@@ -19,7 +19,7 @@
 		<enabled>true</enabled>
 	</finder>
 	<finder>
-		<class>com.expedia.www.haystack.pipes.secretDetector.actions.NonLocalIpV4AddressFinder</class>
+		<class>com.expedia.www.haystack.commons.secretDetector.NonLocalIpV4AddressFinder</class>
 		<name>NonLocalIpV4</name>
 		<enabled>true</enabled>
 	</finder>

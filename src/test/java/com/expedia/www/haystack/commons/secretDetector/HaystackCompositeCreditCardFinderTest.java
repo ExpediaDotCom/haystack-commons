@@ -26,9 +26,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 import static com.expedia.www.haystack.commons.secretDetector.HaystackCreditCardFinderTest.FAKE_VISA_NUMBER_THAT_PASSES_LUHN;
+import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCommonCode.RANDOM;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -40,7 +40,6 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HaystackCompositeCreditCardFinderTest {
-    private static final Random RANDOM = new Random();
     private static final String STRING = RANDOM.nextLong() + "STRING";
     private static final String OUTPUT = RANDOM.nextLong() + "OUTPUT";
     private static final List<String> OUTPUTS = Collections.singletonList(OUTPUT);

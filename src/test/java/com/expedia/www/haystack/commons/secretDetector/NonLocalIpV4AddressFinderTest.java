@@ -21,14 +21,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
-import java.util.Random;
 
+import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCommonCode.RANDOM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class NonLocalIpV4AddressFinderTest {
-    private static final Random RANDOM = new Random();
     private static final String TEN_DOT_PREFIX = "10.";
     private static final String TEN_DOT_FORMAT = TEN_DOT_PREFIX + "%d.%d.%d";
     private static final String ONE92_DOT_168 = "192.168.";
