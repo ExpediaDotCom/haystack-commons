@@ -1,0 +1,5 @@
+haystack:
+  secretsnotifications:
+    whitelist:
+      bucket: "haystack-config"
+      key: "secret-detector/whiteListItems.txt"
