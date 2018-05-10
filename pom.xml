@@ -88,6 +88,7 @@
         <aws-java-sdk.version>1.11.319</aws-java-sdk.version>
         <haystack-metrics.version>2.0.0</haystack-metrics.version>
         <guava.version>19.0</guava.version>
+        <cfg4j-core.version>4.4.1</cfg4j-core.version>
 
         <msgpack.version>0.8.13</msgpack.version>
         <kafka.version>1.0.1</kafka.version>
@@ -204,6 +205,12 @@
             <groupId>io.dataapps.chlorine</groupId>
             <artifactId>chlorine-finder</artifactId>
             <version>${chlorine-finder.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.cfg4j</groupId>
+            <artifactId>cfg4j-core</artifactId>
+            <version>${cfg4j-core.version}</version>
         </dependency>
 
         <dependency>
