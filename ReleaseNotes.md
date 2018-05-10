@@ -1,5 +1,7 @@
 # Release Notes
 
+## 1.0.19 / 2018-05-10 Moved more Java classes from Pipes
+
 ## 1.0.18 / 2018-05-09 Updated idl with timeline trace count entities
 
 ## 1.0.17 / 2018-05-08 Make S3ConfigFetcher.Factory class public
