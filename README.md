@@ -7,18 +7,17 @@ Module with common code that is used by various haystack components
 
 ## Building
 
-####
 Since this repo contains haystack-idl as the submodule, so use the following to clone the repo
 
 ```git clone --recursive git@github.com:ExpediaDotCom/haystack-commons.git```
 
-####Prerequisite: 
+#### Prerequisite: 
 
 * Make sure you have Java 1.8
 * Make sure you have maven 3.3.9 or higher
 
 
-####Build
+#### Build
 
 For a full build including unit tests, one can run -
 
