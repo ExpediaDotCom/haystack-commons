@@ -19,8 +19,6 @@ package com.expedia.www.haystack.commons.secretDetector;
 import com.expedia.open.tracing.Log;
 import com.expedia.open.tracing.Span;
 import com.expedia.open.tracing.Tag;
-import com.expedia.www.haystack.commons.config.Configuration;
-import com.expedia.www.haystack.commons.config.WhiteListConfigurationProvider;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.util.VisibleForTesting;
