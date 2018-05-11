@@ -118,6 +118,11 @@ public class S3ConfigFetcherTest {
     }
 
     @Test
+    public void testSmallConstructor() {
+        new S3ConfigFetcher(BUCKET, KEY);
+    }
+
+    @Test
     public void testGetWhiteListItemsOneMillisecondEarly() {
         when(mockFactory.createCurrentTimeMillis()).thenReturn(ONE_HOUR);
 
