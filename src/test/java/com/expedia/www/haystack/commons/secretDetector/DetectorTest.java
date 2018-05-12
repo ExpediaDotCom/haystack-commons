@@ -69,6 +69,7 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class DetectorTest {
     private static final String APPLICATION = RANDOM.nextLong() + "APPLICATION";
+    private static final String BUCKET = RANDOM.nextLong() + "BUCKET";
     private static final String FINDER_NAME = RANDOM.nextLong() + "FINDER_NAME";
     private static final String SERVICE_NAME = RANDOM.nextLong() + "SERVICE_NAME";
     private static final FinderEngine FINDER_ENGINE = new FinderEngine();
@@ -108,6 +109,11 @@ public class DetectorTest {
     public void tearDown() {
         Detector.COUNTERS.clear();
         verifyNoMoreInteractions(mockLogger, mockFactory, mockCounter, mockMetricObjects, mockS3ConfigFetcher);
+    }
+
+    @Test
+    public void testSmallConstructor() {
+        new Detector(BUCKET, APPLICATION);
     }
 
     @Test

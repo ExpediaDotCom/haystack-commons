@@ -16,10 +16,13 @@
  */
 package com.expedia.www.haystack.commons.secretDetector;
 
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.S3Object;
 import com.netflix.servo.util.VisibleForTesting;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -59,6 +62,14 @@ public class S3ConfigFetcher {
     AtomicLong lastUpdateTime = new AtomicLong(0L);
     @VisibleForTesting
     AtomicBoolean isUpdateInProgress = new AtomicBoolean(false);
+
+    public S3ConfigFetcher(String bucket, String key) {
+        this.logger = LoggerFactory.getLogger(S3ConfigFetcher.class);
+        this.bucket = bucket;
+        this.key = key;
+        this.amazonS3 = AmazonS3ClientBuilder.standard().withRegion(Regions.US_WEST_2).build();
+        this.factory = new Factory();
+    }
 
     public S3ConfigFetcher(Logger s3ConfigFetcherLogger,
                     WhiteListConfig whiteListConfig,

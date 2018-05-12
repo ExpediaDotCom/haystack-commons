@@ -26,6 +26,7 @@ import io.dataapps.chlorine.finder.FinderEngine;
 import org.apache.kafka.streams.kstream.ValueMapper;
 import org.apache.maven.shared.utils.StringUtils;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,6 +58,13 @@ public class Detector implements ValueMapper<Span, Iterable<String>> {
     private final Factory factory;
     private final S3ConfigFetcher s3ConfigFetcher;
     private final String application;
+
+    public Detector(String bucket, String application) {
+        this(LoggerFactory.getLogger(Detector.class),
+                new FinderEngine(),
+                new Factory(),
+                new S3ConfigFetcher(bucket, "secret-detector/whiteListItems.txt"), application);
+    }
 
     public Detector(Logger detectorLogger,
                     FinderEngine finderEngine,
@@ -150,6 +158,10 @@ public class Detector implements ValueMapper<Span, Iterable<String>> {
 
     public static class Factory {
         private final MetricObjects metricObjects;
+
+        public Factory() {
+            this(new MetricObjects());
+        }
 
         public Factory(MetricObjects metricObjects) {
             this.metricObjects = metricObjects;
