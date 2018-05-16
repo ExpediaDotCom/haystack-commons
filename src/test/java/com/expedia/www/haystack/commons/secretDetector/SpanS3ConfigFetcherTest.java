@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.expedia.www.haystack.commons.secretDetector.SpanS3ConfigFetcher.ERROR_MESSAGE;
 import static com.expedia.www.haystack.commons.secretDetector.SpanS3ConfigFetcher.INVALID_DATA_MSG;
@@ -41,6 +42,7 @@ import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCo
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -54,8 +56,8 @@ import static org.mockito.Mockito.when;
 public class SpanS3ConfigFetcherTest {
     private static final String BUCKET = RANDOM.nextLong() + "BUCKET";
     private static final String KEY = RANDOM.nextLong() + "KEY";
-    private static final long ONE_HOUR = 60 * 60 * 1000L;
-    private static final long MORE_THAN_ONE_HOUR = ONE_HOUR + 1 + RANDOM.nextInt(Integer.MAX_VALUE);
+    private static final long ONE_HOUR = 60L * 60L * 1000L;
+    private static final long MORE_THAN_ONE_HOUR = ONE_HOUR + 1L + RANDOM.nextInt(Integer.MAX_VALUE);
     private static final String FINDER_NAME = "FinderName";
     private static final String SERVICE_NAME = "ServiceName";
     private static final String OPERATION_NAME = "OperationName";
@@ -85,7 +87,7 @@ public class SpanS3ConfigFetcherTest {
     private AmazonS3 mockAmazonS3;
 
     @Mock
-    private S3ConfigFetcherBase.Factory mockFactory;
+    private SpanS3ConfigFetcher.SpanFactory mockFactory;
 
     @Mock
     private S3Object mockS3Object;
@@ -100,19 +102,21 @@ public class SpanS3ConfigFetcherTest {
     private BufferedReader mockBufferedReader;
 
     private SpanS3ConfigFetcher spanS3ConfigFetcher;
-    private S3ConfigFetcherBase.Factory factory;
+    private SpanS3ConfigFetcher.SpanFactory factory;
+    private int wantedNumberOfInvocationsCreateWhiteList = 1;
 
     @Before
     public void setUp() {
+        factory = new SpanS3ConfigFetcher.SpanFactory();
         when(mockWhiteListConfig.bucket()).thenReturn(BUCKET);
         when(mockWhiteListConfig.key()).thenReturn(KEY);
         spanS3ConfigFetcher = new SpanS3ConfigFetcher(
                 mockS3ConfigFetcherLogger, mockWhiteListConfig, mockAmazonS3, mockFactory);
-        factory = new SpanS3ConfigFetcher.SpanFactory();
     }
 
     @After
     public void tearDown() {
+        verify(mockFactory, times(wantedNumberOfInvocationsCreateWhiteList)).createWhiteList();
         verify(mockWhiteListConfig).bucket();
         verify(mockWhiteListConfig).key();
         verifyNoMoreInteractions(mockS3Object, mockS3ObjectInputStream, mockInputStreamReader, mockBufferedReader);
@@ -128,14 +132,16 @@ public class SpanS3ConfigFetcherTest {
     public void testGetWhiteListItemsOneMillisecondEarly() {
         when(mockFactory.createCurrentTimeMillis()).thenReturn(ONE_HOUR);
 
-        final Map<String, Map<String, Map<String, Set<String>>>> whiteListItems = spanS3ConfigFetcher.getWhiteListItems();
-        assertTrue(whiteListItems.isEmpty());
+        final Map<String, Map<String, Map<String, Set<String>>>> whiteList =
+                (Map<String, Map<String, Map<String, Set<String>>>>) spanS3ConfigFetcher.getWhiteListItems();
+        assertNull(whiteList);
 
         verify(mockFactory).createCurrentTimeMillis();
     }
 
     @Test
     public void testGetWhiteListItemsSuccessfulFetch() throws IOException {
+        wantedNumberOfInvocationsCreateWhiteList = 2;
         whensForGetWhiteListItems();
         when(mockBufferedReader.readLine()).thenReturn(ONE_LINE_OF_GOOD_DATA)
                 .thenReturn(SECOND_LINE_OF_GOOD_DATA, (String) null);
@@ -164,20 +170,23 @@ public class SpanS3ConfigFetcherTest {
         whensForGetWhiteListItems();
         when(mockBufferedReader.readLine()).thenReturn(ONE_LINE_OF_GOOD_DATA).thenReturn(null);
 
-        final Map<String, Map<String, Map<String, Set<String>>>> whiteListItems = spanS3ConfigFetcher.getWhiteListItems();
-        assertsForEmptyWhitelist(whiteListItems, true);
+        final Map<String, Map<String, Map<String, Set<String>>>> whiteList =
+                (Map<String, Map<String, Map<String, Set<String>>>>) spanS3ConfigFetcher.getWhiteListItems();
+        assertsForEmptyWhiteList(whiteList, true);
 
         verify(mockFactory).createCurrentTimeMillis();
     }
 
     @Test
     public void testGetWhiteListItemsExceptionReadingFromS3() throws IOException {
+        wantedNumberOfInvocationsCreateWhiteList = 2;
         final IOException ioException = new IOException("Test");
         whensForGetWhiteListItems();
         when(mockBufferedReader.readLine()).thenThrow(ioException);
 
-        final Map<String, Map<String, Map<String, Set<String>>>> whiteListItems = spanS3ConfigFetcher.getWhiteListItems();
-        assertsForEmptyWhitelist(whiteListItems, false);
+        final Map<String, Map<String, Map<String, Set<String>>>> whiteList =
+                (Map<String, Map<String, Map<String, Set<String>>>>) spanS3ConfigFetcher.getWhiteListItems();
+        assertsForEmptyWhiteList(whiteList, false);
 
         verifiesForGetWhiteListItems(1, 1);
         verify(mockS3ConfigFetcherLogger).error(ERROR_MESSAGE, ioException);
@@ -185,20 +194,22 @@ public class SpanS3ConfigFetcherTest {
 
     @Test
     public void testGetWhiteListItemsBadData() throws IOException {
+        wantedNumberOfInvocationsCreateWhiteList = 2;
         whensForGetWhiteListItems();
         when(mockBufferedReader.readLine()).thenReturn(ONE_LINE_OF_BAD_DATA).thenReturn(null);
 
-        final Map<String, Map<String, Map<String, Set<String>>>> whiteListItems = spanS3ConfigFetcher.getWhiteListItems();
-        assertsForEmptyWhitelist(whiteListItems, false);
+        final Map<String, Map<String, Map<String, Set<String>>>> whiteList =
+                (Map<String, Map<String, Map<String, Set<String>>>>) spanS3ConfigFetcher.getWhiteListItems();
+        assertsForEmptyWhiteList(whiteList, false);
 
         verifiesForGetWhiteListItems(1, 1);
         verify(mockS3ConfigFetcherLogger).error(eq(String.format(INVALID_DATA_MSG, ONE_LINE_OF_BAD_DATA)),
-                any(SpanS3ConfigFetcher.InvalidWhitelistItemInputException.class));
+                any(S3ConfigFetcherBase.InvalidWhitelistItemInputException.class));
     }
 
-    private void assertsForEmptyWhitelist(Map<String, Map<String, Map<String, Set<String>>>> whiteListItems,
+    private void assertsForEmptyWhiteList(Map<String, Map<String, Map<String, Set<String>>>> whiteList,
                                           boolean isUpdateInProgress) {
-        assertTrue(whiteListItems.isEmpty());
+        assertNull(whiteList);
         assertEquals(0L, spanS3ConfigFetcher.lastUpdateTime.get());
         assertEquals(isUpdateInProgress, spanS3ConfigFetcher.isUpdateInProgress.get());
     }
@@ -209,8 +220,11 @@ public class SpanS3ConfigFetcherTest {
         when(mockS3Object.getObjectContent()).thenReturn(mockS3ObjectInputStream);
         when(mockFactory.createInputStreamReader(any())).thenReturn(mockInputStreamReader);
         when(mockFactory.createBufferedReader(any())).thenReturn(mockBufferedReader);
+        when(mockFactory.createWhiteList())
+                .thenReturn(new ConcurrentHashMap<String, Map<String, Map<String, Set<String>>>>());
     }
 
+    @SuppressWarnings("resource")
     private void verifiesForGetWhiteListItems(int wantedNumberOfInvocationsReadLine,
                                               int wantedNumberOfInvocationsCreateCurrentTimeMillis) throws IOException {
         verify(mockFactory, times(wantedNumberOfInvocationsCreateCurrentTimeMillis)).createCurrentTimeMillis();
@@ -237,5 +251,23 @@ public class SpanS3ConfigFetcherTest {
     @Test
     public void testFactoryCreateBufferedReader() {
         assertNotNull(factory.createBufferedReader(mockInputStreamReader));
+    }
+
+    @SuppressWarnings("LawOfDemeter")
+    @Test
+    public void testFactoryCreateWhiteListItem() {
+        final SpanWhiteListItem whiteListItem = factory.createWhiteListItem(
+                FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME);
+        assertEquals(FINDER_NAME, whiteListItem.getFinderName());
+        assertEquals(SERVICE_NAME, whiteListItem.getServiceName());
+        assertEquals(OPERATION_NAME, whiteListItem.getOperationName());
+        assertEquals(TAG_NAME, whiteListItem.getTagName());
+    }
+
+    @Test
+    public void testGetWhiteList() {
+        final Map<String, Map<String, Map<String, Map<String, Set<String>>>>> whiteList =
+                (Map<String, Map<String, Map<String, Map<String, Set<String>>>>>) factory.createWhiteList();
+        assertNotNull(whiteList);
     }
 }

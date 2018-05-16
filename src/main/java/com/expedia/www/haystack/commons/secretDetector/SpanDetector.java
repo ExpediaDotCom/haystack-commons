@@ -60,7 +60,7 @@ public class SpanDetector extends DetectorBase implements ValueMapper<Span, Iter
         this(LoggerFactory.getLogger(SpanDetector.class),
                 new FinderEngine(),
                 new Factory(),
-                new SpanS3ConfigFetcher(bucket, "secret-detector/whiteListItems.txt"), application);
+                new SpanS3ConfigFetcher(bucket, "secret-detector/whiteList.txt"), application);
     }
 
     public SpanDetector(Logger detectorLogger,
@@ -96,15 +96,15 @@ public class SpanDetector extends DetectorBase implements ValueMapper<Span, Iter
             if (StringUtils.isNotEmpty(tag.getVStr())) {
                 final String input = tag.getVStr();
                 putKeysOfSecretsIntoMap(mapOfTypeToKeysOfSecrets, tag.getKey(), finderEngine.findWithType(input));
-            } else if (tag.getVBytes().size() > 0) {
-                final String input = new String(tag.getVBytes().toByteArray());
+            } else if (!tag.getVBytes().isEmpty()) {
+                @SuppressWarnings("ObjectAllocationInLoop") final String input = new String(tag.getVBytes().toByteArray());
                 putKeysOfSecretsIntoMap(mapOfTypeToKeysOfSecrets, tag.getKey(), finderEngine.findWithType(input));
             }
         }
     }
 
     @Override
-    public Iterable<String> apply(Span span) {
+    public Iterable<String> apply(@SuppressWarnings("ParameterNameDiffersFromOverriddenParameter") Span span) {
         final Map<String, List<String>> mapOfTypeToKeysOfSecrets = findSecrets(span);
         final String serviceName = span.getServiceName();
         final String operationName = span.getOperationName();
@@ -136,7 +136,7 @@ public class SpanDetector extends DetectorBase implements ValueMapper<Span, Iter
                 .computeIfAbsent(finderName, (v -> new HashMap<>()))
                 .computeIfAbsent(serviceName, (v -> new FinderNameAndServiceName(finderName, serviceName)));
         COUNTERS.computeIfAbsent(
-                finderNameAndServiceName, (c -> factory.createCounter(finderNameAndServiceName, application)))
+                finderNameAndServiceName, (counter -> factory.createCounter(finderNameAndServiceName, application)))
                 .increment();
     }
 
