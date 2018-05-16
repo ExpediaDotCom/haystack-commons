@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import org.slf4j.Logger;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
@@ -31,7 +32,29 @@ public abstract class S3ConfigFetcherBase {
         return factory.createBufferedReader(inputStreamReader);
     }
 
-    static class Factory {
+    /**
+     * Reads a line from S3 and transforms it to an appropriate subclass of WhiteListItemBase
+     *
+     * @param reader the reader
+     * @return a non-null WhiteListItemBase if the read was successful, else null (which indicates all lines have been read)
+     * @throws IOException                        if a problem occurs reading from S3
+     * @throws InvalidWhitelistItemInputException if an input line in the S3 file is not formatted properly
+     */
+    WhiteListItemBase readSingleWhiteListItemFromS3(BufferedReader reader)
+            throws IOException, InvalidWhitelistItemInputException {
+        final String line = reader.readLine();
+        if (line == null) {
+            return null;
+        }
+        final String[] strings = line.split(";");
+        if (strings.length >= itemCount) {
+            return factory.createWhiteListItem(strings);
+        }
+        throw new InvalidWhitelistItemInputException(line);
+    }
+
+
+    abstract static class Factory<T extends WhiteListItemBase> {
         long createCurrentTimeMillis() {
             return System.currentTimeMillis();
         }
@@ -43,6 +66,8 @@ public abstract class S3ConfigFetcherBase {
         BufferedReader createBufferedReader(InputStreamReader inputStreamReader) {
             return new BufferedReader(inputStreamReader);
         }
+
+        abstract T createWhiteListItem(String... items);
     }
 
     static class InvalidWhitelistItemInputException extends Exception {

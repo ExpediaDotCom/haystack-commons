@@ -57,7 +57,7 @@ public class SpanS3ConfigFetcher extends S3ConfigFetcherBase {
 
     public SpanS3ConfigFetcher(String bucket, String key) {
         super(LoggerFactory.getLogger(SpanS3ConfigFetcher.class), bucket, key,
-                AmazonS3ClientBuilder.standard().withRegion(Regions.US_WEST_2).build(), new Factory(), ITEM_COUNT);
+                AmazonS3ClientBuilder.standard().withRegion(Regions.US_WEST_2).build(), new SpanFactory(), ITEM_COUNT);
     }
 
     public SpanS3ConfigFetcher(Logger s3ConfigFetcherLogger,
@@ -93,17 +93,17 @@ public class SpanS3ConfigFetcher extends S3ConfigFetcherBase {
         try (final S3Object s3Object = amazonS3.getObject(bucket, key)) {
             final BufferedReader bufferedReader = getBufferedReader(s3Object);
             final Map<String, Map<String, Map<String, Set<String>>>> whiteListItems = new ConcurrentHashMap<>();
-            SpanWhiteListItem spanWhiteListItem = readSingleWhiteListItemFromS3(bufferedReader);
+            SpanWhiteListItem spanWhiteListItem = (SpanWhiteListItem) readSingleWhiteListItemFromS3(bufferedReader);
             while (spanWhiteListItem != null) {
-                putTagInWhiteListItems(whiteListItems, spanWhiteListItem);
-                spanWhiteListItem = readSingleWhiteListItemFromS3(bufferedReader);
+                putItemInWhiteListItems(whiteListItems, spanWhiteListItem);
+                spanWhiteListItem = (SpanWhiteListItem) readSingleWhiteListItemFromS3(bufferedReader);
             }
             return whiteListItems;
         }
     }
 
-    private void putTagInWhiteListItems(Map<String, Map<String, Map<String, Set<String>>>> whiteListItems,
-                                        SpanWhiteListItem spanWhiteListItem) {
+    private void putItemInWhiteListItems(Map<String, Map<String, Map<String, Set<String>>>> whiteListItems,
+                                         SpanWhiteListItem spanWhiteListItem) {
         final Map<String, Map<String, Set<String>>> finderNameMap =
                 whiteListItems.computeIfAbsent(spanWhiteListItem.getFinderName(), v -> new ConcurrentHashMap<>());
         final Map<String, Set<String>> serviceNameMap =
@@ -128,24 +128,10 @@ public class SpanS3ConfigFetcher extends S3ConfigFetcherBase {
         return false;
     }
 
-    /**
-     * Reads a line from S3 and transforms it to a SpanWhiteListItem
-     *
-     * @param reader the reader
-     * @return a non-null SpanWhiteListItem if the read was successful, else null (which indicates all lines have been read)
-     * @throws IOException                        if a problem occurs reading from S3
-     * @throws InvalidWhitelistItemInputException if an input line in the S3 file is not formatted properly
-     */
-    private SpanWhiteListItem readSingleWhiteListItemFromS3(BufferedReader reader)
-            throws IOException, InvalidWhitelistItemInputException {
-        final String line = reader.readLine();
-        if (line == null) {
-            return null;
+    static class SpanFactory extends S3ConfigFetcherBase.Factory<SpanWhiteListItem> {
+        @Override
+        SpanWhiteListItem createWhiteListItem(String... items) {
+            return new SpanWhiteListItem(items[0], items[1], items[2], items[3]);
         }
-        final String[] strings = line.split(";");
-        if (strings.length >= 4) {
-            return new SpanWhiteListItem(strings[0], strings[1], strings[2], strings[3]);
-        }
-        throw new InvalidWhitelistItemInputException(line);
     }
 }

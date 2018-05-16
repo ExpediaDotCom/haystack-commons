@@ -23,6 +23,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
@@ -62,8 +63,13 @@ public class SpanS3ConfigFetcherTest {
     private static final String COMMENT = "Comment";
     private static final String ONE_LINE_OF_GOOD_DATA = String.format("%s;%s;%s;%s;%s",
             FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME, COMMENT);
+    private static final SpanWhiteListItem SPAN_WHITE_LIST_ITEM =
+            new SpanWhiteListItem(FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME);
+    private static final String SECOND_FINDER_NAME = "SecondFinderName";
     private static final String SECOND_LINE_OF_GOOD_DATA = String.format("%s;%s;%s;%s;%s",
-            "SecondFinderName", SERVICE_NAME, OPERATION_NAME, TAG_NAME, COMMENT);
+            SECOND_FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME, COMMENT);
+    private static final SpanWhiteListItem SECOND_SPAN_WHITE_LIST_ITEM =
+            new SpanWhiteListItem(SECOND_FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME);
     private static final String ONE_LINE_OF_BAD_DATA = String.format("%s;%s;%s",
             FINDER_NAME, SERVICE_NAME, OPERATION_NAME);
     private static final String MISSING_FINDER_NAME = "MissingFinderName";
@@ -102,7 +108,7 @@ public class SpanS3ConfigFetcherTest {
         when(mockWhiteListConfig.key()).thenReturn(KEY);
         spanS3ConfigFetcher = new SpanS3ConfigFetcher(
                 mockS3ConfigFetcherLogger, mockWhiteListConfig, mockAmazonS3, mockFactory);
-        factory = new S3ConfigFetcherBase.Factory();
+        factory = new SpanS3ConfigFetcher.SpanFactory();
     }
 
     @After
@@ -131,8 +137,10 @@ public class SpanS3ConfigFetcherTest {
     @Test
     public void testGetWhiteListItemsSuccessfulFetch() throws IOException {
         whensForGetWhiteListItems();
-        when(mockBufferedReader.readLine()).thenReturn(ONE_LINE_OF_GOOD_DATA).thenReturn(SECOND_LINE_OF_GOOD_DATA)
-                .thenReturn(null);
+        when(mockBufferedReader.readLine()).thenReturn(ONE_LINE_OF_GOOD_DATA)
+                .thenReturn(SECOND_LINE_OF_GOOD_DATA, (String) null);
+        when(mockFactory.createWhiteListItem(Matchers.<String>anyVararg()))
+                .thenReturn(SPAN_WHITE_LIST_ITEM, SECOND_SPAN_WHITE_LIST_ITEM);
 
         spanS3ConfigFetcher.getWhiteListItems();
 
@@ -145,6 +153,8 @@ public class SpanS3ConfigFetcherTest {
         assertFalse(spanS3ConfigFetcher.isUpdateInProgress.get());
 
         verifiesForGetWhiteListItems(3, 6);
+        verify(mockFactory).createWhiteListItem(FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME, COMMENT);
+        verify(mockFactory).createWhiteListItem(SECOND_FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME, COMMENT);
         verify(mockS3ConfigFetcherLogger).info(SUCCESSFUL_WHITELIST_UPDATE_MSG);
     }
 
