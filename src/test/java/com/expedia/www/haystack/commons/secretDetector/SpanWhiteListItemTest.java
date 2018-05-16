@@ -24,73 +24,73 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 
-public class WhiteListItemTest {
+public class SpanWhiteListItemTest {
     private static final String FINDER_NAME = RANDOM.nextLong() + "FINDER_NAME";
     private static final String SERVICE_NAME = RANDOM.nextLong() + "SERVICE_NAME";
     private static final String OPERATION_NAME = RANDOM.nextLong() + "OPERATION_NAME";
     private static final String TAG_NAME = RANDOM.nextLong() + "TAG_NAME";
-    private WhiteListItem whiteListItem;
-    
+    private SpanWhiteListItem spanWhiteListItem;
+
     @Before
     public void setUp() {
-        whiteListItem = new WhiteListItem(FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME);
+        spanWhiteListItem = new SpanWhiteListItem(FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME);
     }
 
     @Test
     public void testEqualsAndHashcodeNullOther() {
         //noinspection SimplifiableJUnitAssertion,ConstantConditions,ObjectEqualsNull
-        assertFalse(whiteListItem.equals(null));
+        assertFalse(spanWhiteListItem.equals(null));
     }
 
     @Test
     public void testEqualsSameOther() {
-        assertEquals(whiteListItem, whiteListItem);
+        assertEquals(spanWhiteListItem, spanWhiteListItem);
     }
 
     @Test
     public void testEqualsDifferentClassOther() {
         //noinspection SimplifiableJUnitAssertion,EqualsBetweenInconvertibleTypes
-        assertFalse(whiteListItem.equals(FINDER_NAME));
+        assertFalse(spanWhiteListItem.equals(FINDER_NAME));
     }
 
     @Test
     public void testEqualsAndHashcodeTotalMatch() {
-        final WhiteListItem whiteListItem
-                = new WhiteListItem(FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME);
-        assertEquals(this.whiteListItem, whiteListItem);
-        assertEquals(this.whiteListItem.hashCode(), whiteListItem.hashCode());
+        final SpanWhiteListItem spanWhiteListItem
+                = new SpanWhiteListItem(FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME);
+        assertEquals(this.spanWhiteListItem, spanWhiteListItem);
+        assertEquals(this.spanWhiteListItem.hashCode(), spanWhiteListItem.hashCode());
     }
 
     @Test
     public void testEqualsAndHashcodeFinderNameMismatch() {
         testEqualsAndHashcode(
-                new WhiteListItem("1", "2", "3", "4"),
-                new WhiteListItem("5", "2", "3", "4"));
+                new SpanWhiteListItem("1", "2", "3", "4"),
+                new SpanWhiteListItem("5", "2", "3", "4"));
     }
 
     @Test
     public void testEqualsAndHashcodeServiceNameMismatch() {
         testEqualsAndHashcode(
-                new WhiteListItem("1", "2", "3", "4"),
-                new WhiteListItem("1", "6", "3", "4"));
+                new SpanWhiteListItem("1", "2", "3", "4"),
+                new SpanWhiteListItem("1", "6", "3", "4"));
     }
 
     @Test
     public void testEqualsAndHashcodeOperationNameMismatch() {
         testEqualsAndHashcode(
-                new WhiteListItem("1", "2", "3", "4"),
-                new WhiteListItem("1", "2", "7", "4"));
+                new SpanWhiteListItem("1", "2", "3", "4"),
+                new SpanWhiteListItem("1", "2", "7", "4"));
     }
 
     @Test
     public void testEqualsAndHashcodeTagNameMismatch() {
         testEqualsAndHashcode(
-                new WhiteListItem("1", "2", "3", "4"),
-                new WhiteListItem("1", "2", "3", "8"));
+                new SpanWhiteListItem("1", "2", "3", "4"),
+                new SpanWhiteListItem("1", "2", "3", "8"));
     }
 
-    private void testEqualsAndHashcode(WhiteListItem whiteListItem1, WhiteListItem whiteListItem2) {
-        assertNotEquals(whiteListItem1, whiteListItem2);
-        assertNotEquals(whiteListItem1.hashCode(), whiteListItem2.hashCode());
+    private void testEqualsAndHashcode(SpanWhiteListItem spanWhiteListItem1, SpanWhiteListItem spanWhiteListItem2) {
+        assertNotEquals(spanWhiteListItem1, spanWhiteListItem2);
+        assertNotEquals(spanWhiteListItem1.hashCode(), spanWhiteListItem2.hashCode());
     }
 }
