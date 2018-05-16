@@ -37,7 +37,7 @@ public class FinderNameAndServiceName {
     }
 
     // equals and hashCode are overridden with this IDE-created code so that FinderNameAndServiceName objects can
-    // be the key in the static Detector.COUNTERS object.
+    // be the key in the static SpanDetector.COUNTERS object.
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

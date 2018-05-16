@@ -28,7 +28,6 @@ import org.apache.maven.shared.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Finds that tag keys and field keys in a Span that contain secrets.
  */
 @SuppressWarnings("WeakerAccess")
-public class Detector implements ValueMapper<Span, Iterable<String>> {
+public class SpanDetector extends DetectorBase implements ValueMapper<Span, Iterable<String>> {
     private static final String TEXT_TEMPLATE =
             "Confidential data has been found in a span: service [%s] operation [%s] span [%s] trace [%s] tag(s) [%s]";
     @VisibleForTesting
@@ -53,28 +52,25 @@ public class Detector implements ValueMapper<Span, Iterable<String>> {
     static final String COUNTER_NAME = "SECRETS";
     private static final Map<String, Map<String, FinderNameAndServiceName>> CACHED_FINDER_NAME_AND_SECRET_NAME_OBJECTS =
             new ConcurrentHashMap<>();
-    private final FinderEngine finderEngine;
     private final Logger logger;
     private final Factory factory;
-    private final S3ConfigFetcher s3ConfigFetcher;
     private final String application;
 
-    public Detector(String bucket, String application) {
-        this(LoggerFactory.getLogger(Detector.class),
+    public SpanDetector(String bucket, String application) {
+        this(LoggerFactory.getLogger(SpanDetector.class),
                 new FinderEngine(),
                 new Factory(),
-                new S3ConfigFetcher(bucket, "secret-detector/whiteListItems.txt"), application);
+                new SpanS3ConfigFetcher(bucket, "secret-detector/whiteListItems.txt"), application);
     }
 
-    public Detector(Logger detectorLogger,
-                    FinderEngine finderEngine,
-                    Factory detectorFactory,
-                    S3ConfigFetcher s3ConfigFetcher,
-                    String application) {
+    public SpanDetector(Logger detectorLogger,
+                        FinderEngine finderEngine,
+                        Factory detectorFactory,
+                        SpanS3ConfigFetcher spanS3ConfigFetcher,
+                        String application) {
+        super(finderEngine, spanS3ConfigFetcher);
         this.logger = detectorLogger;
-        this.finderEngine = finderEngine;
         this.factory = detectorFactory;
-        this.s3ConfigFetcher = s3ConfigFetcher;
         this.application = application;
     }
 
@@ -98,19 +94,12 @@ public class Detector implements ValueMapper<Span, Iterable<String>> {
     private void findSecrets(Map<String, List<String>> mapOfTypeToKeysOfSecrets, List<Tag> tags) {
         for (final Tag tag : tags) {
             if (StringUtils.isNotEmpty(tag.getVStr())) {
-                putKeysOfSecretsIntoMap(mapOfTypeToKeysOfSecrets, tag, finderEngine.findWithType(tag.getVStr()));
+                final String input = tag.getVStr();
+                putKeysOfSecretsIntoMap(mapOfTypeToKeysOfSecrets, tag.getKey(), finderEngine.findWithType(input));
             } else if (tag.getVBytes().size() > 0) {
                 final String input = new String(tag.getVBytes().toByteArray());
-                putKeysOfSecretsIntoMap(mapOfTypeToKeysOfSecrets, tag, finderEngine.findWithType(input));
+                putKeysOfSecretsIntoMap(mapOfTypeToKeysOfSecrets, tag.getKey(), finderEngine.findWithType(input));
             }
-        }
-    }
-
-    private void putKeysOfSecretsIntoMap(Map<String, List<String>> mapOfTypeToKeysOfSecrets,
-                                         Tag tag,
-                                         Map<String, List<String>> mapOfTypeToKeysOfSecretsJustFound) {
-        for (final String finderName : mapOfTypeToKeysOfSecretsJustFound.keySet()) {
-            mapOfTypeToKeysOfSecrets.computeIfAbsent(finderName, (l -> new ArrayList<>())).add(tag.getKey());
         }
     }
 
@@ -125,14 +114,9 @@ public class Detector implements ValueMapper<Span, Iterable<String>> {
         final String emailText = getEmailText(span, mapOfTypeToKeysOfSecrets);
         for (Map.Entry<String, List<String>> finderNameToKeysOfSecrets : mapOfTypeToKeysOfSecrets.entrySet()) {
             final String finderName = finderNameToKeysOfSecrets.getKey();
-            final List<String> keysOfSecrets = finderNameToKeysOfSecrets.getValue();
-            for (int index = 0; index < keysOfSecrets.size(); index++) {
-                final String tagName = keysOfSecrets.get(index);
-                if (s3ConfigFetcher.isTagInWhiteList(finderName, serviceName, operationName, tagName)) {
-                    keysOfSecrets.remove(index);
-                }
-            }
-            if (!keysOfSecrets.isEmpty() && FINDERS_TO_LOG.contains(finderName)) {
+            finderNameToKeysOfSecrets.getValue().removeIf(
+                    tagName -> spanS3ConfigFetcher.isTagInWhiteList(finderName, serviceName, operationName, tagName));
+            if (!finderNameToKeysOfSecrets.getValue().isEmpty() && FINDERS_TO_LOG.contains(finderName)) {
                 logger.info(emailText);
                 incrementCounter(serviceName, finderName, application);
             }
