@@ -1,6 +1,9 @@
 # Release Notes
 
-## 1.0.21 / 2018-05-17 Added an XML secret detectorª
+## 1.0.22 / 2018-05-17 Make SpanS3ConfigFetcher.SpanFactory and XmlS3ConfigFetcher.XmlFactory public
+These classes need to be public so that the can be wired by Spring in the haystack-pipes package.
+
+## 1.0.21 / 2018-05-17 Added an XML secret detector
 
 ## 1.0.20 / 2018-05-14 Add some convenience constructors to to some of the classes moved from Pipes
 
