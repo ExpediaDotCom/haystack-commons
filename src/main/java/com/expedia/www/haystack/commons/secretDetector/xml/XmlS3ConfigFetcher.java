@@ -66,7 +66,7 @@ public class XmlS3ConfigFetcher extends S3ConfigFetcherBase {
         xmlPaths.add(xmlWhiteListItem.getXmlPath());
     }
 
-    static class SpanFactory extends Factory<XmlWhiteListItem> {
+    public static class SpanFactory extends Factory<XmlWhiteListItem> {
         @Override
         public XmlWhiteListItem createWhiteListItem(String... items) {
             return new XmlWhiteListItem(items[0], items[1]);

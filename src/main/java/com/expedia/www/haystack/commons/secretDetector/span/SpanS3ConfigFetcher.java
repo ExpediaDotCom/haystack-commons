@@ -78,7 +78,7 @@ public class SpanS3ConfigFetcher extends S3ConfigFetcherBase {
         tags.add(spanWhiteListItem.getTagName());
     }
 
-    static class SpanFactory extends S3ConfigFetcherBase.Factory<SpanWhiteListItem> {
+    public static class SpanFactory extends S3ConfigFetcherBase.Factory<SpanWhiteListItem> {
         @Override
         public SpanWhiteListItem createWhiteListItem(String... items) {
             return new SpanWhiteListItem(items[0], items[1], items[2], items[3]);
