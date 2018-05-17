@@ -14,8 +14,10 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.commons.secretDetector;
+package com.expedia.www.haystack.commons.secretDetector.xml;
 
+import com.expedia.www.haystack.commons.secretDetector.DetectorBase;
+import com.google.common.annotations.VisibleForTesting;
 import io.dataapps.chlorine.finder.FinderEngine;
 import org.apache.kafka.streams.kstream.ValueMapper;
 import org.w3c.dom.Attr;
@@ -26,32 +28,31 @@ import org.w3c.dom.NodeList;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Finds secrets:
- * <ul>
- *     <li>For a Spans, finds the tag keys and field keys are secrets.</li>
- *     <li>For an XML document, find the names of elements or attributes whose values are secrets.</li>
- * </ul>
+ * Finds the names of elements or attributes whose values are secrets.
  */
 @SuppressWarnings("WeakerAccess")
 public class XmlDetector extends DetectorBase implements ValueMapper<Document, Iterable<String>> {
-    private static final String TEXT_TEMPLATE =
-            "Confidential data has been found in an XML BLOB: root [%s] [%s]";
+    @VisibleForTesting
+    static final String TEXT_TEMPLATE = "Confidential data has been found in an XML BLOB: %s";
+    private static final String[] ZERO_LENGTH_STRING_ARRAY = new String[0];
 
     public XmlDetector(String bucket) {
-        this(new FinderEngine(), new SpanS3ConfigFetcher(bucket, "secret-detector/blobWhiteListItems.txt"));
+        this(new FinderEngine(), new XmlS3ConfigFetcher(bucket, "secret-detector/blobWhiteListItems.txt"));
     }
 
-    public XmlDetector(FinderEngine finderEngine, SpanS3ConfigFetcher spanS3ConfigFetcher) {
-        super(finderEngine, spanS3ConfigFetcher);
+    public XmlDetector(FinderEngine finderEngine, XmlS3ConfigFetcher xmlS3ConfigFetcher) {
+        super(finderEngine, xmlS3ConfigFetcher);
     }
 
     /**
      * Finds secrets in an XML Document
+     *
      * @param document the XML document in which to look for secrets
      * @return keys of the secrets (the names of the attributes or elements whose values are secrets)
      */
@@ -62,7 +63,7 @@ public class XmlDetector extends DetectorBase implements ValueMapper<Document, I
         return mapOfTypeToKeysOfSecrets;
     }
 
-    private void findSecrets(Node node, Map<String,List<String>> mapOfTypeToKeysOfSecrets) {
+    private void findSecrets(Node node, Map<String, List<String>> mapOfTypeToKeysOfSecrets) {
         findSecretsInNodeValue(node, mapOfTypeToKeysOfSecrets);
         findSecretsInChildNodes(node, mapOfTypeToKeysOfSecrets);
         findSecretsInAttributes(node, mapOfTypeToKeysOfSecrets);
@@ -70,11 +71,11 @@ public class XmlDetector extends DetectorBase implements ValueMapper<Document, I
 
     private void findSecretsInNodeValue(Node node, Map<String, List<String>> mapOfTypeToKeysOfSecrets) {
         final String nodeValue = node.getNodeValue();
-        if(nodeValue != null) {
+        if (nodeValue != null) {
             final Map<String, List<String>> secrets = finderEngine.findWithType(nodeValue);
-            if(!secrets.isEmpty()) {
+            if (!secrets.isEmpty()) {
                 final String completeHierarchy = getCompleteHierarchy(node);
-                if(completeHierarchy.endsWith("/#text")) { // prevents double detection of attribute values;
+                if (completeHierarchy.endsWith("/#text")) { // prevents double detection of attribute values;
                     // couldn't figure out a cleaner way to do this. An attribute with a secret as its value will see
                     // that secret appear in this check directly (because getNodeValue() returns Attr.value, per
                     // https://docs.oracle.com/javase/8/docs/api/index.html?javax/xml/parsers/DocumentBuilderFactory.html)
@@ -89,7 +90,7 @@ public class XmlDetector extends DetectorBase implements ValueMapper<Document, I
 
     private void findSecretsInChildNodes(Node node, Map<String, List<String>> mapOfTypeToKeysOfSecrets) {
         final NodeList childNodes = node.getChildNodes();
-        if(childNodes != null) {
+        if (childNodes != null) {
             for (int index = 0; index < childNodes.getLength(); index++) {
                 final Node childNode = childNodes.item(index);
                 findSecrets(childNode, mapOfTypeToKeysOfSecrets);
@@ -99,7 +100,7 @@ public class XmlDetector extends DetectorBase implements ValueMapper<Document, I
 
     private void findSecretsInAttributes(Node node, Map<String, List<String>> mapOfTypeToKeysOfSecrets) {
         final NamedNodeMap attributes = node.getAttributes();
-        if(attributes != null) {
+        if (attributes != null) {
             for (int index = 0; index < attributes.getLength(); index++) {
                 final Node attribute = attributes.item(index);
                 findSecrets(attribute, mapOfTypeToKeysOfSecrets);
@@ -107,43 +108,40 @@ public class XmlDetector extends DetectorBase implements ValueMapper<Document, I
         }
     }
 
-    private String getCompleteHierarchy(Node leafNode) {
+    private static String getCompleteHierarchy(Node leafNode) {
         final LinkedList<String> nodeList = new LinkedList<>();
         Node node = leafNode;
         do {
             nodeList.addFirst(node.getNodeName());
-            node = node instanceof Attr ? ((Attr) node).getOwnerElement() : node.getParentNode();
-        } while(node != null);
-        return String.join("/", nodeList.toArray(new String[0]));
+            node = (node instanceof Attr) ? ((Attr) node).getOwnerElement() : node.getParentNode();
+        } while (node != null);
+        return String.join("/", nodeList.toArray(ZERO_LENGTH_STRING_ARRAY));
     }
 
+    @SuppressWarnings("MethodWithMultipleLoops")
     @Override
-    public Iterable<String> apply(Document document) {
+    public Iterable<String> apply(@SuppressWarnings("ParameterNameDiffersFromOverriddenParameter") Document document) {
         final Map<String, List<String>> mapOfTypeToKeysOfSecrets = findSecrets(document);
         if (mapOfTypeToKeysOfSecrets.isEmpty()) {
             return Collections.emptyList();
         }
-        final String emailText = getEmailText(document, mapOfTypeToKeysOfSecrets);
-        for (Map.Entry<String, List<String>> finderNameToKeysOfSecrets : mapOfTypeToKeysOfSecrets.entrySet()) {
+        final String emailText = getEmailText(mapOfTypeToKeysOfSecrets);
+        final Iterator<Map.Entry<String, List<String>>> firstLevelIterator = mapOfTypeToKeysOfSecrets.entrySet().iterator();
+        while (firstLevelIterator.hasNext()) {
+            final Map.Entry<String, List<String>> finderNameToKeysOfSecrets = firstLevelIterator.next();
             final String finderName = finderNameToKeysOfSecrets.getKey();
-            final List<String> keysOfSecrets = finderNameToKeysOfSecrets.getValue();
-            for (int index = 0; index < keysOfSecrets.size(); index++) {
-                // TODO Update SpanS3ConfigFetcher to support XML path strings in whitelist for XML
-                /*
-                if (spanS3ConfigFetcher.isTagInXmlWhiteList(finderName, keysOfSecrets.get(index))) {
-                    keysOfSecrets.remove(index);
-                }
-                */
+            final List<String> xmlPaths = finderNameToKeysOfSecrets.getValue();
+            xmlPaths.removeIf(xmlPath -> s3ConfigFetcher.isInWhiteList(finderName, xmlPath));
+            if (xmlPaths.isEmpty()) {
+                firstLevelIterator.remove();
             }
         }
-
-        return Collections.singleton(emailText);
+        return mapOfTypeToKeysOfSecrets.isEmpty() ? Collections.emptyList() : Collections.singleton(emailText);
     }
 
     @SuppressWarnings("WeakerAccess")
-    public static String getEmailText(Document document, Map<String, List<String>> mapOfTypeToKeysOfSecrets) {
-        return String.format(TEXT_TEMPLATE, document.getDocumentElement().getLocalName(),
-                mapOfTypeToKeysOfSecrets.toString());
+    public static String getEmailText(Map<String, List<String>> mapOfTypeToKeysOfSecrets) {
+        return String.format(TEXT_TEMPLATE, mapOfTypeToKeysOfSecrets.toString());
     }
 
 }

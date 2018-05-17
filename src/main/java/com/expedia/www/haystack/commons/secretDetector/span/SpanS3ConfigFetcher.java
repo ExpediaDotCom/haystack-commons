@@ -14,12 +14,14 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.commons.secretDetector;
+package com.expedia.www.haystack.commons.secretDetector.span;
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.netflix.servo.util.VisibleForTesting;
+import com.expedia.www.haystack.commons.secretDetector.S3ConfigFetcherBase;
+import com.expedia.www.haystack.commons.secretDetector.WhiteListConfig;
+import com.expedia.www.haystack.commons.secretDetector.WhiteListItemBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,9 +32,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @SuppressWarnings("WeakerAccess")
 public class SpanS3ConfigFetcher extends S3ConfigFetcherBase {
     private static final int ITEM_COUNT = 4;
-    @VisibleForTesting
-    static final String INVALID_DATA_MSG = "The line [%s] does not contain at least three semicolons to separate "
-            + "finderName, String serviceName, String operationName, String tagName";
 
     public SpanS3ConfigFetcher(String bucket, String key) {
         super(LoggerFactory.getLogger(SpanS3ConfigFetcher.class), bucket, key,
@@ -47,17 +46,17 @@ public class SpanS3ConfigFetcher extends S3ConfigFetcherBase {
                 ITEM_COUNT);
     }
 
-    public boolean isTagInWhiteList(String finderName, String serviceName, String operationName, String tagName) {
+    public boolean isInWhiteList(String... strings) {
         @SuppressWarnings("unchecked")
         final Map<String, Map<String, Map<String, Set<String>>>> finderNameMap =
                 (Map<String, Map<String, Map<String, Set<String>>>>) getWhiteListItems();
-        final Map<String, Map<String, Set<String>>> serviceNameMap = finderNameMap.get(finderName);
+        final Map<String, Map<String, Set<String>>> serviceNameMap = finderNameMap.get(strings[0]);
         if (serviceNameMap != null) {
-            final Map<String, Set<String>> operationNameMap = serviceNameMap.get(serviceName);
+            final Map<String, Set<String>> operationNameMap = serviceNameMap.get(strings[1]);
             if (operationNameMap != null) {
-                final Set<String> tagNameSet = operationNameMap.get(operationName);
+                final Set<String> tagNameSet = operationNameMap.get(strings[2]);
                 if (tagNameSet != null) {
-                    return tagNameSet.contains(tagName);
+                    return tagNameSet.contains(strings[3]);
                 }
             }
         }
@@ -66,7 +65,7 @@ public class SpanS3ConfigFetcher extends S3ConfigFetcherBase {
 
     @SuppressWarnings("unchecked")
     @Override
-    void putItemInWhiteList(Object whiteList, WhiteListItemBase whiteListItem) {
+    protected void putItemInWhiteList(Object whiteList, WhiteListItemBase whiteListItem) {
         final SpanWhiteListItem spanWhiteListItem = (SpanWhiteListItem) whiteListItem;
         final Map<String, Map<String, Map<String, Set<String>>>> whiteListCastAsMap =
                 (Map<String, Map<String, Map<String, Set<String>>>>) whiteList;
@@ -79,15 +78,14 @@ public class SpanS3ConfigFetcher extends S3ConfigFetcherBase {
         tags.add(spanWhiteListItem.getTagName());
     }
 
-
     static class SpanFactory extends S3ConfigFetcherBase.Factory<SpanWhiteListItem> {
         @Override
-        SpanWhiteListItem createWhiteListItem(String... items) {
+        public SpanWhiteListItem createWhiteListItem(String... items) {
             return new SpanWhiteListItem(items[0], items[1], items[2], items[3]);
         }
 
         @Override
-        Object createWhiteList() {
+        public Object createWhiteList() {
             return new ConcurrentHashMap<String, Map<String, Map<String, Map<String, Set<String>>>>>();
         }
     }

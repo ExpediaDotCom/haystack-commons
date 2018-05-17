@@ -23,7 +23,7 @@ public class FinderNameAndServiceName {
     private final String finderName;
     private final String serviceName;
 
-    FinderNameAndServiceName(String finderName, String serviceName) {
+    public FinderNameAndServiceName(String finderName, String serviceName) {
         this.finderName = finderName;
         this.serviceName = serviceName;
     }
@@ -38,6 +38,7 @@ public class FinderNameAndServiceName {
 
     // equals and hashCode are overridden with this IDE-created code so that FinderNameAndServiceName objects can
     // be the key in the static SpanDetector.COUNTERS object.
+    @SuppressWarnings({"UnclearExpression", "QuestionableName", "AccessingNonPublicFieldOfAnotherObject", "ParameterNameDiffersFromOverriddenParameter"})
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -47,6 +48,7 @@ public class FinderNameAndServiceName {
                 Objects.equals(serviceName, that.serviceName);
     }
 
+    @SuppressWarnings("ObjectInstantiationInEqualsHashCode")
     @Override
     public int hashCode() {
         return Objects.hash(finderName, serviceName);

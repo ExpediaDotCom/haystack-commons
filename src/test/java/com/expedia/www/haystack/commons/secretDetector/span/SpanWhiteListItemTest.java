@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.commons.secretDetector;
+package com.expedia.www.haystack.commons.secretDetector.span;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -55,10 +55,9 @@ public class SpanWhiteListItemTest {
 
     @Test
     public void testEqualsAndHashcodeTotalMatch() {
-        final SpanWhiteListItem spanWhiteListItem
-                = new SpanWhiteListItem(FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME);
-        assertEquals(this.spanWhiteListItem, spanWhiteListItem);
-        assertEquals(this.spanWhiteListItem.hashCode(), spanWhiteListItem.hashCode());
+        final SpanWhiteListItem other = new SpanWhiteListItem(FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME);
+        assertEquals(this.spanWhiteListItem, other);
+        assertEquals(this.spanWhiteListItem.hashCode(), other.hashCode());
     }
 
     @Test
@@ -89,7 +88,8 @@ public class SpanWhiteListItemTest {
                 new SpanWhiteListItem("1", "2", "3", "8"));
     }
 
-    private void testEqualsAndHashcode(SpanWhiteListItem spanWhiteListItem1, SpanWhiteListItem spanWhiteListItem2) {
+    private static void testEqualsAndHashcode(SpanWhiteListItem spanWhiteListItem1,
+                                              SpanWhiteListItem spanWhiteListItem2) {
         assertNotEquals(spanWhiteListItem1, spanWhiteListItem2);
         assertNotEquals(spanWhiteListItem1.hashCode(), spanWhiteListItem2.hashCode());
     }

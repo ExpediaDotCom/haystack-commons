@@ -14,11 +14,13 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.commons.secretDetector;
+package com.expedia.www.haystack.commons.secretDetector.xml;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.expedia.www.haystack.commons.secretDetector.S3ConfigFetcherBase;
+import com.expedia.www.haystack.commons.secretDetector.WhiteListConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,9 +37,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.expedia.www.haystack.commons.secretDetector.SpanS3ConfigFetcher.ERROR_MESSAGE;
-import static com.expedia.www.haystack.commons.secretDetector.SpanS3ConfigFetcher.INVALID_DATA_MSG;
-import static com.expedia.www.haystack.commons.secretDetector.SpanS3ConfigFetcher.SUCCESSFUL_WHITELIST_UPDATE_MSG;
+import static com.expedia.www.haystack.commons.secretDetector.S3ConfigFetcherBase.ERROR_MESSAGE;
+import static com.expedia.www.haystack.commons.secretDetector.S3ConfigFetcherBase.INVALID_DATA_MSG;
+import static com.expedia.www.haystack.commons.secretDetector.S3ConfigFetcherBase.SUCCESSFUL_WHITELIST_UPDATE_MSG;
 import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCommonCode.RANDOM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -52,30 +54,28 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("Duplicates")
 @RunWith(MockitoJUnitRunner.class)
-public class SpanS3ConfigFetcherTest {
+public class XmlS3ConfigFetcherTest {
     private static final String BUCKET = RANDOM.nextLong() + "BUCKET";
     private static final String KEY = RANDOM.nextLong() + "KEY";
     private static final long ONE_HOUR = 60L * 60L * 1000L;
     private static final long MORE_THAN_ONE_HOUR = ONE_HOUR + 1L + RANDOM.nextInt(Integer.MAX_VALUE);
     private static final String FINDER_NAME = "FinderName";
-    private static final String SERVICE_NAME = "ServiceName";
-    private static final String OPERATION_NAME = "OperationName";
-    private static final String TAG_NAME = "TagName";
+    private static final String XML_PATH = "XmlPath";
     private static final String COMMENT = "Comment";
-    private static final String ONE_LINE_OF_GOOD_DATA = String.format("%s;%s;%s;%s;%s",
-            FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME, COMMENT);
-    private static final SpanWhiteListItem SPAN_WHITE_LIST_ITEM =
-            new SpanWhiteListItem(FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME);
+    private static final String ONE_LINE_OF_GOOD_DATA = String.format("%s;%s;%s",
+            FINDER_NAME, XML_PATH, COMMENT);
+    private static final XmlWhiteListItem SPAN_WHITE_LIST_ITEM =
+            new XmlWhiteListItem(FINDER_NAME, XML_PATH);
     private static final String SECOND_FINDER_NAME = "SecondFinderName";
-    private static final String SECOND_LINE_OF_GOOD_DATA = String.format("%s;%s;%s;%s;%s",
-            SECOND_FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME, COMMENT);
-    private static final SpanWhiteListItem SECOND_SPAN_WHITE_LIST_ITEM =
-            new SpanWhiteListItem(SECOND_FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME);
-    private static final String ONE_LINE_OF_BAD_DATA = String.format("%s;%s;%s",
-            FINDER_NAME, SERVICE_NAME, OPERATION_NAME);
+    private static final String SECOND_LINE_OF_GOOD_DATA = String.format("%s;%s;%s",
+            SECOND_FINDER_NAME, XML_PATH, COMMENT);
+    private static final XmlWhiteListItem SECOND_SPAN_WHITE_LIST_ITEM =
+            new XmlWhiteListItem(SECOND_FINDER_NAME, XML_PATH);
+    private static final String ONE_LINE_OF_BAD_DATA = FINDER_NAME;
     private static final String MISSING_FINDER_NAME = "MissingFinderName";
-    private static final String MISSING_SERVICE_NAME = "MissingServiceName";
+    private static final String MISSING_XML_PATH = "MissingXmlPath";
 
     @Mock
     private Logger mockS3ConfigFetcherLogger;
@@ -87,7 +87,7 @@ public class SpanS3ConfigFetcherTest {
     private AmazonS3 mockAmazonS3;
 
     @Mock
-    private SpanS3ConfigFetcher.SpanFactory mockFactory;
+    private XmlS3ConfigFetcher.SpanFactory mockFactory;
 
     @Mock
     private S3Object mockS3Object;
@@ -101,16 +101,16 @@ public class SpanS3ConfigFetcherTest {
     @Mock
     private BufferedReader mockBufferedReader;
 
-    private SpanS3ConfigFetcher spanS3ConfigFetcher;
-    private SpanS3ConfigFetcher.SpanFactory factory;
+    private XmlS3ConfigFetcher spanS3ConfigFetcher;
+    private XmlS3ConfigFetcher.SpanFactory factory;
     private int wantedNumberOfInvocationsCreateWhiteList = 1;
 
     @Before
     public void setUp() {
-        factory = new SpanS3ConfigFetcher.SpanFactory();
+        factory = new XmlS3ConfigFetcher.SpanFactory();
         when(mockWhiteListConfig.bucket()).thenReturn(BUCKET);
         when(mockWhiteListConfig.key()).thenReturn(KEY);
-        spanS3ConfigFetcher = new SpanS3ConfigFetcher(
+        spanS3ConfigFetcher = new XmlS3ConfigFetcher(
                 mockS3ConfigFetcherLogger, mockWhiteListConfig, mockAmazonS3, mockFactory);
     }
 
@@ -125,15 +125,15 @@ public class SpanS3ConfigFetcherTest {
 
     @Test
     public void testSmallConstructor() {
-        new SpanS3ConfigFetcher(BUCKET, KEY);
+        new XmlS3ConfigFetcher(BUCKET, KEY);
     }
 
     @Test
     public void testGetWhiteListItemsOneMillisecondEarly() {
         when(mockFactory.createCurrentTimeMillis()).thenReturn(ONE_HOUR);
 
-        final Map<String, Map<String, Map<String, Set<String>>>> whiteList =
-                (Map<String, Map<String, Map<String, Set<String>>>>) spanS3ConfigFetcher.getWhiteListItems();
+        final Map<String, Set<String>> whiteList =
+                (Map<String, Set<String>>) spanS3ConfigFetcher.getWhiteListItems();
         assertNull(whiteList);
 
         verify(mockFactory).createCurrentTimeMillis();
@@ -150,28 +150,26 @@ public class SpanS3ConfigFetcherTest {
 
         spanS3ConfigFetcher.getWhiteListItems();
 
-        assertTrue(spanS3ConfigFetcher.isTagInWhiteList(FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME));
-        assertFalse(spanS3ConfigFetcher.isTagInWhiteList(MISSING_FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME));
-        assertFalse(spanS3ConfigFetcher.isTagInWhiteList(FINDER_NAME, MISSING_SERVICE_NAME, OPERATION_NAME, TAG_NAME));
-        assertFalse(spanS3ConfigFetcher.isTagInWhiteList(FINDER_NAME, SERVICE_NAME, "MissingOperationName", TAG_NAME));
-        assertFalse(spanS3ConfigFetcher.isTagInWhiteList(FINDER_NAME, SERVICE_NAME, OPERATION_NAME, "MissingTagName"));
-        assertEquals(MORE_THAN_ONE_HOUR, spanS3ConfigFetcher.lastUpdateTime.get());
-        assertFalse(spanS3ConfigFetcher.isUpdateInProgress.get());
+        assertTrue(spanS3ConfigFetcher.isInWhiteList(FINDER_NAME, XML_PATH));
+        assertFalse(spanS3ConfigFetcher.isInWhiteList(MISSING_FINDER_NAME, XML_PATH));
+        assertFalse(spanS3ConfigFetcher.isInWhiteList(FINDER_NAME, MISSING_XML_PATH));
+        assertEquals(MORE_THAN_ONE_HOUR, spanS3ConfigFetcher.getLastUpdateTimeForTest());
+        assertFalse(spanS3ConfigFetcher.isUpdateInProgressForTest());
 
-        verifiesForGetWhiteListItems(3, 6);
-        verify(mockFactory).createWhiteListItem(FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME, COMMENT);
-        verify(mockFactory).createWhiteListItem(SECOND_FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME, COMMENT);
+        verifiesForGetWhiteListItems(3, 4);
+        verify(mockFactory).createWhiteListItem(FINDER_NAME, XML_PATH, COMMENT);
+        verify(mockFactory).createWhiteListItem(SECOND_FINDER_NAME, XML_PATH, COMMENT);
         verify(mockS3ConfigFetcherLogger).info(SUCCESSFUL_WHITELIST_UPDATE_MSG);
     }
 
     @Test
     public void testGetWhiteListItemsUpdateInProgress() throws IOException {
-        spanS3ConfigFetcher.isUpdateInProgress.set(true);
+        spanS3ConfigFetcher.setUpdateInProgressForTest(true);
         whensForGetWhiteListItems();
         when(mockBufferedReader.readLine()).thenReturn(ONE_LINE_OF_GOOD_DATA).thenReturn(null);
 
-        final Map<String, Map<String, Map<String, Set<String>>>> whiteList =
-                (Map<String, Map<String, Map<String, Set<String>>>>) spanS3ConfigFetcher.getWhiteListItems();
+        final Map<String, Set<String>> whiteList =
+                (Map<String, Set<String>>) spanS3ConfigFetcher.getWhiteListItems();
         assertsForEmptyWhiteList(whiteList, true);
 
         verify(mockFactory).createCurrentTimeMillis();
@@ -184,8 +182,8 @@ public class SpanS3ConfigFetcherTest {
         whensForGetWhiteListItems();
         when(mockBufferedReader.readLine()).thenThrow(ioException);
 
-        final Map<String, Map<String, Map<String, Set<String>>>> whiteList =
-                (Map<String, Map<String, Map<String, Set<String>>>>) spanS3ConfigFetcher.getWhiteListItems();
+        final Map<String, Set<String>> whiteList =
+                (Map<String, Set<String>>) spanS3ConfigFetcher.getWhiteListItems();
         assertsForEmptyWhiteList(whiteList, false);
 
         verifiesForGetWhiteListItems(1, 1);
@@ -196,22 +194,22 @@ public class SpanS3ConfigFetcherTest {
     public void testGetWhiteListItemsBadData() throws IOException {
         wantedNumberOfInvocationsCreateWhiteList = 2;
         whensForGetWhiteListItems();
-        when(mockBufferedReader.readLine()).thenReturn(ONE_LINE_OF_BAD_DATA).thenReturn(null);
+        when(mockBufferedReader.readLine()).thenReturn(ONE_LINE_OF_BAD_DATA, (String) null);
 
-        final Map<String, Map<String, Map<String, Set<String>>>> whiteList =
-                (Map<String, Map<String, Map<String, Set<String>>>>) spanS3ConfigFetcher.getWhiteListItems();
+        final Map<String, Set<String>> whiteList =
+                (Map<String, Set<String>>) spanS3ConfigFetcher.getWhiteListItems();
         assertsForEmptyWhiteList(whiteList, false);
 
         verifiesForGetWhiteListItems(1, 1);
-        verify(mockS3ConfigFetcherLogger).error(eq(String.format(INVALID_DATA_MSG, ONE_LINE_OF_BAD_DATA)),
+        verify(mockS3ConfigFetcherLogger).error(eq(String.format(INVALID_DATA_MSG, ONE_LINE_OF_BAD_DATA, 1)),
                 any(S3ConfigFetcherBase.InvalidWhitelistItemInputException.class));
     }
 
-    private void assertsForEmptyWhiteList(Map<String, Map<String, Map<String, Set<String>>>> whiteList,
+    private void assertsForEmptyWhiteList(Map<String, Set<String>> whiteList,
                                           boolean isUpdateInProgress) {
         assertNull(whiteList);
-        assertEquals(0L, spanS3ConfigFetcher.lastUpdateTime.get());
-        assertEquals(isUpdateInProgress, spanS3ConfigFetcher.isUpdateInProgress.get());
+        assertEquals(0L, spanS3ConfigFetcher.getLastUpdateTimeForTest());
+        assertEquals(isUpdateInProgress, spanS3ConfigFetcher.isUpdateInProgressForTest());
     }
 
     private void whensForGetWhiteListItems() {
@@ -221,7 +219,7 @@ public class SpanS3ConfigFetcherTest {
         when(mockFactory.createInputStreamReader(any())).thenReturn(mockInputStreamReader);
         when(mockFactory.createBufferedReader(any())).thenReturn(mockBufferedReader);
         when(mockFactory.createWhiteList())
-                .thenReturn(new ConcurrentHashMap<String, Map<String, Map<String, Set<String>>>>());
+                .thenReturn(new ConcurrentHashMap<String, Set<String>>());
     }
 
     @SuppressWarnings("resource")
@@ -256,18 +254,16 @@ public class SpanS3ConfigFetcherTest {
     @SuppressWarnings("LawOfDemeter")
     @Test
     public void testFactoryCreateWhiteListItem() {
-        final SpanWhiteListItem whiteListItem = factory.createWhiteListItem(
-                FINDER_NAME, SERVICE_NAME, OPERATION_NAME, TAG_NAME);
+        final XmlWhiteListItem whiteListItem = factory.createWhiteListItem(
+                FINDER_NAME, XML_PATH);
         assertEquals(FINDER_NAME, whiteListItem.getFinderName());
-        assertEquals(SERVICE_NAME, whiteListItem.getServiceName());
-        assertEquals(OPERATION_NAME, whiteListItem.getOperationName());
-        assertEquals(TAG_NAME, whiteListItem.getTagName());
+        assertEquals(XML_PATH, whiteListItem.getXmlPath());
     }
 
     @Test
     public void testGetWhiteList() {
-        final Map<String, Map<String, Map<String, Map<String, Set<String>>>>> whiteList =
-                (Map<String, Map<String, Map<String, Map<String, Set<String>>>>>) factory.createWhiteList();
+        final Map<String, Set<String>> whiteList =
+                (Map<String, Set<String>>) factory.createWhiteList();
         assertNotNull(whiteList);
     }
 }

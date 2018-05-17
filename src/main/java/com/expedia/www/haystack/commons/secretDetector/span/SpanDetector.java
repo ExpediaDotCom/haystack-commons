@@ -14,11 +14,13 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.commons.secretDetector;
+package com.expedia.www.haystack.commons.secretDetector.span;
 
 import com.expedia.open.tracing.Log;
 import com.expedia.open.tracing.Span;
 import com.expedia.open.tracing.Tag;
+import com.expedia.www.haystack.commons.secretDetector.DetectorBase;
+import com.expedia.www.haystack.commons.secretDetector.FinderNameAndServiceName;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.util.VisibleForTesting;
@@ -30,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -112,17 +115,22 @@ public class SpanDetector extends DetectorBase implements ValueMapper<Span, Iter
             return Collections.emptyList();
         }
         final String emailText = getEmailText(span, mapOfTypeToKeysOfSecrets);
-        for (Map.Entry<String, List<String>> finderNameToKeysOfSecrets : mapOfTypeToKeysOfSecrets.entrySet()) {
+        final Iterator<Map.Entry<String, List<String>>> firstLevelIterator = mapOfTypeToKeysOfSecrets.entrySet().iterator();
+        while (firstLevelIterator.hasNext()) {
+            final Map.Entry<String, List<String>> finderNameToKeysOfSecrets = firstLevelIterator.next();
             final String finderName = finderNameToKeysOfSecrets.getKey();
             finderNameToKeysOfSecrets.getValue().removeIf(
-                    tagName -> spanS3ConfigFetcher.isTagInWhiteList(finderName, serviceName, operationName, tagName));
-            if (!finderNameToKeysOfSecrets.getValue().isEmpty() && FINDERS_TO_LOG.contains(finderName)) {
-                logger.info(emailText);
+                    tagName -> s3ConfigFetcher.isInWhiteList(finderName, serviceName, operationName, tagName));
+            if (finderNameToKeysOfSecrets.getValue().isEmpty()) {
+                firstLevelIterator.remove();
+            } else {
+                if (FINDERS_TO_LOG.contains(finderName)) {
+                    logger.info(emailText);
+                }
                 incrementCounter(serviceName, finderName, application);
             }
         }
-
-        return Collections.singleton(emailText);
+        return mapOfTypeToKeysOfSecrets.isEmpty() ? Collections.emptyList() : Collections.singleton(emailText);
     }
 
     @SuppressWarnings("WeakerAccess")
