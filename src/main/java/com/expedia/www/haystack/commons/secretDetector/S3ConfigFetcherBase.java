@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018 Expedia, Inc.
+ *
+ *       Licensed under the Apache License, Version 2.0 (the "License");
+ *       you may not use this file except in compliance with the License.
+ *       You may obtain a copy of the License at
+ *
+ *           http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *       Unless required by applicable law or agreed to in writing, software
+ *       distributed under the License is distributed on an "AS IS" BASIS,
+ *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *       See the License for the specific language governing permissions and
+ *       limitations under the License.
+ *
+ */
 package com.expedia.www.haystack.commons.secretDetector;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -17,10 +33,11 @@ import java.util.concurrent.atomic.AtomicReference;
 public abstract class S3ConfigFetcherBase {
     private static final long ONE_HOUR = TimeUnit.HOURS.toMillis(1L);
     @VisibleForTesting
-    static final String SUCCESSFUL_WHITELIST_UPDATE_MSG = "Successfully updated the whitelist from S3";
+    public static final String SUCCESSFUL_WHITELIST_UPDATE_MSG = "Successfully updated the whitelist from S3";
     @VisibleForTesting
-    static final String ERROR_MESSAGE = "Exception getting white list items" +
-            "; whitelisted finder/service/operation/tag combinations may not be correct";
+    public static final String ERROR_MESSAGE = "Exception getting white list items";
+    public static final String INVALID_DATA_MSG = "The line [%s] does not contain at least %d semicolons to "
+            + "separate the expected fields";
 
     protected final Logger logger;
     protected final String bucket;
@@ -30,18 +47,16 @@ public abstract class S3ConfigFetcherBase {
     @VisibleForTesting
     private final AtomicReference<Object> whiteList = new AtomicReference<>();
     private final int itemCount;
-    @VisibleForTesting
-    AtomicLong lastUpdateTime = new AtomicLong(0L);
-    @VisibleForTesting
-    AtomicBoolean isUpdateInProgress = new AtomicBoolean(false);
+    private final AtomicLong lastUpdateTime = new AtomicLong(0L);
+    private final AtomicBoolean isUpdateInProgress = new AtomicBoolean(false);
 
     @SuppressWarnings("ConstructorWithTooManyParameters")
-    S3ConfigFetcherBase(Logger logger,
-                        String bucket,
-                        String key,
-                        AmazonS3 amazonS3,
-                        Factory factory,
-                        int itemCount) {
+    protected S3ConfigFetcherBase(Logger logger,
+                                  String bucket,
+                                  String key,
+                                  AmazonS3 amazonS3,
+                                  Factory factory,
+                                  int itemCount) {
         this.logger = logger;
         this.bucket = bucket;
         this.key = key;
@@ -49,6 +64,18 @@ public abstract class S3ConfigFetcherBase {
         this.factory = factory;
         this.whiteList.set(factory.createWhiteList());
         this.itemCount = itemCount;
+    }
+
+    public void setUpdateInProgressForTest(boolean isUpdateInProgress) {
+        this.isUpdateInProgress.set(isUpdateInProgress);
+    }
+
+    public boolean isUpdateInProgressForTest() {
+        return isUpdateInProgress.get();
+    }
+
+    public long getLastUpdateTimeForTest() {
+        return lastUpdateTime.get();
     }
 
     private BufferedReader getBufferedReader(S3Object s3Object) {
@@ -75,10 +102,10 @@ public abstract class S3ConfigFetcherBase {
         if (strings.length >= itemCount) {
             return factory.createWhiteListItem(strings);
         }
-        throw new InvalidWhitelistItemInputException(line);
+        throw new InvalidWhitelistItemInputException(line, itemCount);
     }
 
-    Object getWhiteListItems() {
+    public Object getWhiteListItems() {
         final long now = factory.createCurrentTimeMillis();
         if ((now - lastUpdateTime.get()) > ONE_HOUR) {
             if (isUpdateInProgress.compareAndSet(false, true)) {
@@ -98,7 +125,9 @@ public abstract class S3ConfigFetcherBase {
         return whiteList.get();
     }
 
-    abstract void putItemInWhiteList(Object whiteList, WhiteListItemBase whiteListItem);
+    protected abstract void putItemInWhiteList(Object whiteList, WhiteListItemBase whiteListItem);
+
+    public abstract boolean isInWhiteList(String... strings);
 
     private Object readAllWhiteListItemsFromS3()
             throws IOException, InvalidWhitelistItemInputException {
@@ -116,29 +145,29 @@ public abstract class S3ConfigFetcherBase {
 
 
     @SuppressWarnings("MethodMayBeStatic")
-    abstract static class Factory<T extends WhiteListItemBase> {
-        long createCurrentTimeMillis() {
+    public abstract static class Factory<T extends WhiteListItemBase> {
+        public long createCurrentTimeMillis() {
             return System.currentTimeMillis();
         }
 
-        InputStreamReader createInputStreamReader(InputStream inputStream) {
+        public InputStreamReader createInputStreamReader(InputStream inputStream) {
             //noinspection ImplicitDefaultCharsetUsage
             return new InputStreamReader(inputStream);
         }
 
-        BufferedReader createBufferedReader(InputStreamReader inputStreamReader) {
+        public BufferedReader createBufferedReader(InputStreamReader inputStreamReader) {
             return new BufferedReader(inputStreamReader);
         }
 
-        abstract T createWhiteListItem(String... items);
+        protected abstract T createWhiteListItem(String... items);
 
-        abstract Object createWhiteList();
+        public abstract Object createWhiteList();
     }
 
     @SuppressWarnings("CheckedExceptionClass")
-    static class InvalidWhitelistItemInputException extends Exception {
-        InvalidWhitelistItemInputException(String line) {
-            super(String.format(SpanS3ConfigFetcher.INVALID_DATA_MSG, line));
+    public static class InvalidWhitelistItemInputException extends Exception {
+        InvalidWhitelistItemInputException(String line, int itemCount) {
+            super(String.format(INVALID_DATA_MSG, line, itemCount - 1));
         }
     }
 }
