@@ -1,5 +1,7 @@
 # Release Notes
 
+## 1.0.21 / 2018-05-17 Added an XML secret detectorª
+
 ## 1.0.20 / 2018-05-14 Add some convenience constructors to to some of the classes moved from Pipes
 
 ## 1.0.19 / 2018-05-10 Moved more Java classes from Pipes
