@@ -37,7 +37,7 @@ import java.util.Map;
  * Finds the names of elements or attributes whose values are secrets.
  */
 @SuppressWarnings("WeakerAccess")
-public class XmlDetector extends DetectorBase implements ValueMapper<Document, Iterable<String>> {
+public class XmlDetector extends DetectorBase {
     @VisibleForTesting
     static final String TEXT_TEMPLATE = "Confidential data has been found in an XML BLOB: %s";
     private static final String[] ZERO_LENGTH_STRING_ARRAY = new String[0];
@@ -117,7 +117,7 @@ public class XmlDetector extends DetectorBase implements ValueMapper<Document, I
         } while (node != null);
         return String.join("/", nodeList.toArray(ZERO_LENGTH_STRING_ARRAY));
     }
-
+/*
     @SuppressWarnings("MethodWithMultipleLoops")
     @Override
     public Iterable<String> apply(@SuppressWarnings("ParameterNameDiffersFromOverriddenParameter") Document document) {
@@ -138,7 +138,7 @@ public class XmlDetector extends DetectorBase implements ValueMapper<Document, I
         }
         return mapOfTypeToKeysOfSecrets.isEmpty() ? Collections.emptyList() : Collections.singleton(emailText);
     }
-
+*/
     @SuppressWarnings("WeakerAccess")
     public static String getEmailText(Map<String, List<String>> mapOfTypeToKeysOfSecrets) {
         return String.format(TEXT_TEMPLATE, mapOfTypeToKeysOfSecrets.toString());

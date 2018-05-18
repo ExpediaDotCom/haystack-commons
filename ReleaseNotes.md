@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.0.23 / 2018-05-17 Make XmlDetector not implement ValueMapper
+This class is only used by haystack-data-scrubber, which doesn't have a dependency on any Kafka code.
+(ValueMapper is a Kafka class.) The XmlDetector.apply() method and its tests are now commented out. 
+
 ## 1.0.22 / 2018-05-17 Make SpanS3ConfigFetcher.SpanFactory and XmlS3ConfigFetcher.XmlFactory public
 These classes need to be public so that the can be wired by Spring in the haystack-pipes package.
 
