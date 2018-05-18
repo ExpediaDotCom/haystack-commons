@@ -35,15 +35,10 @@ import java.util.Map;
 
 import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCommonCode.EMAIL_ADDRESS;
 import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCommonCode.RANDOM;
-import static com.expedia.www.haystack.commons.secretDetector.xml.XmlDetector.TEXT_TEMPLATE;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 
 @SuppressWarnings("MultipleExceptionsDeclaredOnTestMethod")
 @RunWith(MockitoJUnitRunner.class)
@@ -123,7 +118,7 @@ public class XmlDetectorTest {
     public void testFindSecretsEmailAddressInChildElementText() {
         testFindSecretsContainsSecret(DOCUMENT_EMAIL_IN_CHILD_TEXT, DOCUMENT_EMAIL_IN_CHILD_TEXT_ID);
     }
-
+/*
     @Test
     public void testApplyNoSecret() {
         final Iterable<String> iterable = xmlDetector.apply(DOCUMENT_NO_SECRETS);
@@ -183,7 +178,7 @@ public class XmlDetectorTest {
         }
         verify(mockXmlS3ConfigFetcher).isInWhiteList("Email", id);
     }
-
+*/
     private void testFindSecretsContainsSecret(Document document, String expected) {
         final Map<String, List<String>> secrets = xmlDetector.findSecrets(document);
         assertEquals(1, secrets.size());
