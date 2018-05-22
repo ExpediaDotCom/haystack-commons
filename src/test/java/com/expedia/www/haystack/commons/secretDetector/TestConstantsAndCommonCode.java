@@ -20,6 +20,7 @@ import com.expedia.open.tracing.Span;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 
+import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Random;
 
@@ -27,8 +28,9 @@ import java.util.Random;
  * Constants used by tests in subpackages; this class is included in functional code to avoid having to publish a jar
  * file from the test directory.
  */
+@SuppressWarnings({"InterfaceNeverImplemented", "ConstantDeclaredInInterface"})
 public interface TestConstantsAndCommonCode {
-    Random RANDOM = new Random();
+    Random RANDOM = new SecureRandom();
 
     String STRING_FIELD_KEY = "logStrField";
     String STRING_FIELD_VALUE = "logFieldValue";
@@ -43,7 +45,7 @@ public interface TestConstantsAndCommonCode {
     String STRING_TAG_KEY = "strKey";
     String STRING_TAG_VALUE = "tagValue";
     String BYTES_TAG_KEY = "bytesKey";
-    String TAGS = "[" +
+    String TAGS = '[' +
             "{\"key\":\"" + STRING_TAG_KEY + "\",\"vStr\":\"" + STRING_TAG_VALUE + "\"}," +
             "{\"key\":\"longKey\",\"vLong\":\"987654321\"}," +
             "{\"key\":\"doubleKey\",\"vDouble\":9876.54321}," +
@@ -65,26 +67,39 @@ public interface TestConstantsAndCommonCode {
             "\"logs\":" + LOGS +
             "\"tags\":" + TAGS;
     Span FULLY_POPULATED_SPAN = buildSpan(JSON_SPAN_STRING);
+
     String JSON_SPAN_STRING_WITH_EMAIL_ADDRESS_IN_TAG = JSON_SPAN_STRING.replace(STRING_TAG_VALUE, EMAIL_ADDRESS);
     Span EMAIL_ADDRESS_SPAN = buildSpan(JSON_SPAN_STRING_WITH_EMAIL_ADDRESS_IN_TAG);
+
     String JSON_SPAN_STRING_WITH_EMAIL_ADDRESS_IN_TAG_BYTES_AND_LOG_BYTES =
             JSON_SPAN_STRING.replace(BASE_64_ENCODED_STRING, BASE_64_ENCODED_EMAIL);
-    Span EMAIL_ADDRESS_IN_TAG_BYTES_SPAN = buildSpan(JSON_SPAN_STRING_WITH_EMAIL_ADDRESS_IN_TAG_BYTES_AND_LOG_BYTES);
+    Span EMAIL_ADDRESS_IN_TAG_BYTES_AND_LOG_BYTES_SPAN =
+            buildSpan(JSON_SPAN_STRING_WITH_EMAIL_ADDRESS_IN_TAG_BYTES_AND_LOG_BYTES);
+
     String IP_ADDRESS = String.format("%d.%d.%d.%d", 193, RANDOM.nextInt(Byte.MAX_VALUE), // 192.168. and 10. are local
             RANDOM.nextInt(Byte.MAX_VALUE), RANDOM.nextInt(Byte.MAX_VALUE));
     String JSON_SPAN_STRING_WITH_IP_ADDRESS_IN_TAG = JSON_SPAN_STRING.replace(STRING_TAG_VALUE, IP_ADDRESS);
     Span IP_ADDRESS_SPAN = buildSpan(JSON_SPAN_STRING_WITH_IP_ADDRESS_IN_TAG);
+
     String JSON_SPAN_STRING_WITH_EMAIL_ADDRESS_IN_LOG_TAG = JSON_SPAN_STRING.replace(STRING_FIELD_VALUE, EMAIL_ADDRESS);
     Span EMAIL_ADDRESS_LOG_SPAN = buildSpan(JSON_SPAN_STRING_WITH_EMAIL_ADDRESS_IN_LOG_TAG);
+
     String CREDIT_CARD = "4640-1234-5678-9120";
     String JSON_SPAN_STRING_WITH_CREDIT_CARD_IN_LOG_TAG = JSON_SPAN_STRING.replace(STRING_FIELD_VALUE, CREDIT_CARD);
     Span CREDIT_CARD_LOG_SPAN = buildSpan(JSON_SPAN_STRING_WITH_CREDIT_CARD_IN_LOG_TAG);
+
+    String JSON_SPAN_STRING_WITH_EMAIL_ADDRESS_IN_TAG_BYTES_AND_LOG_BYTES_AND_IP_ADDRESS_IN_TAG =
+            JSON_SPAN_STRING.replace(BASE_64_ENCODED_STRING, BASE_64_ENCODED_EMAIL)
+            .replace(STRING_TAG_VALUE, IP_ADDRESS);
+    Span EMAIL_ADDRESSES_AND_IP_ADDRESS_SPAN =
+            buildSpan(JSON_SPAN_STRING_WITH_EMAIL_ADDRESS_IN_TAG_BYTES_AND_LOG_BYTES_AND_IP_ADDRESS_IN_TAG);
 
     static Span buildSpan(String jsonSpanString) {
         final Span.Builder builder = Span.newBuilder();
         try {
             JsonFormat.parser().merge(jsonSpanString, builder);
         } catch (InvalidProtocolBufferException e) {
+            //noinspection ProhibitedExceptionThrown
             throw new RuntimeException("Failed to parse JSON", e);
         }
         return builder.build();

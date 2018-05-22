@@ -1,5 +1,8 @@
 # Release Notes
 
+## 1.0.24 / 2018-05-22 Write SpanSecretMasker
+This class masks secrets when they are found in Span objects.
+
 ## 1.0.23 / 2018-05-17 Make XmlDetector not implement ValueMapper
 This class is only used by haystack-data-scrubber, which doesn't have a dependency on any Kafka code.
 (ValueMapper is a Kafka class.) The XmlDetector.apply() method and its tests are now commented out. 

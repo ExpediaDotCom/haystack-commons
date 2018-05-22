@@ -53,4 +53,12 @@ public class FinderNameAndServiceName {
     public int hashCode() {
         return Objects.hash(finderName, serviceName);
     }
+
+    @Override
+    public String toString() {
+        return "FinderNameAndServiceName{" +
+                "finderName='" + finderName + '\'' +
+                ", serviceName='" + serviceName + '\'' +
+                '}';
+    }
 }

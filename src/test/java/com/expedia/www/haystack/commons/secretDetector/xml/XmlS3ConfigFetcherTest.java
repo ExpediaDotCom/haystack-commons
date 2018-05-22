@@ -251,7 +251,6 @@ public class XmlS3ConfigFetcherTest {
         assertNotNull(factory.createBufferedReader(mockInputStreamReader));
     }
 
-    @SuppressWarnings("LawOfDemeter")
     @Test
     public void testFactoryCreateWhiteListItem() {
         final XmlWhiteListItem whiteListItem = factory.createWhiteListItem(
