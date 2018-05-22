@@ -256,7 +256,6 @@ public class SpanS3ConfigFetcherTest {
         assertNotNull(factory.createBufferedReader(mockInputStreamReader));
     }
 
-    @SuppressWarnings("LawOfDemeter")
     @Test
     public void testFactoryCreateWhiteListItem() {
         final SpanWhiteListItem whiteListItem = factory.createWhiteListItem(

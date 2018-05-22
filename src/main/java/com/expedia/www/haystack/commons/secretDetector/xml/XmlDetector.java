@@ -19,16 +19,13 @@ package com.expedia.www.haystack.commons.secretDetector.xml;
 import com.expedia.www.haystack.commons.secretDetector.DetectorBase;
 import com.google.common.annotations.VisibleForTesting;
 import io.dataapps.chlorine.finder.FinderEngine;
-import org.apache.kafka.streams.kstream.ValueMapper;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -139,9 +136,4 @@ public class XmlDetector extends DetectorBase {
         return mapOfTypeToKeysOfSecrets.isEmpty() ? Collections.emptyList() : Collections.singleton(emailText);
     }
 */
-    @SuppressWarnings("WeakerAccess")
-    public static String getEmailText(Map<String, List<String>> mapOfTypeToKeysOfSecrets) {
-        return String.format(TEXT_TEMPLATE, mapOfTypeToKeysOfSecrets.toString());
-    }
-
 }

@@ -44,7 +44,7 @@ import static com.expedia.www.haystack.commons.secretDetector.span.SpanDetector.
 import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCommonCode.BYTES_FIELD_KEY;
 import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCommonCode.BYTES_TAG_KEY;
 import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCommonCode.CREDIT_CARD_LOG_SPAN;
-import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCommonCode.EMAIL_ADDRESS_IN_TAG_BYTES_SPAN;
+import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCommonCode.EMAIL_ADDRESS_IN_TAG_BYTES_AND_LOG_BYTES_SPAN;
 import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCommonCode.EMAIL_ADDRESS_LOG_SPAN;
 import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCommonCode.EMAIL_ADDRESS_SPAN;
 import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCommonCode.FULLY_POPULATED_SPAN;
@@ -127,7 +127,7 @@ public class SpanDetectorTest {
     @Test
     public void testFindSecretsHaystackEmailAddressInTagBytes() {
         when(mockFactory.createCounter(any(), anyString())).thenReturn(mockCounter);
-        final Map<String, List<String>> secrets = spanDetector.findSecrets(EMAIL_ADDRESS_IN_TAG_BYTES_SPAN);
+        final Map<String, List<String>> secrets = spanDetector.findSecrets(EMAIL_ADDRESS_IN_TAG_BYTES_AND_LOG_BYTES_SPAN);
 
         assertEquals(1, secrets.size());
         final List<String> tagsThatContainEmails = secrets.get(EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML);

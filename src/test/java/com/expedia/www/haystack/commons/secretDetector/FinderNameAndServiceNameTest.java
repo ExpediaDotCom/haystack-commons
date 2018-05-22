@@ -64,9 +64,8 @@ public class FinderNameAndServiceNameTest {
 
     @Test
     public void testEqualsTotalMatch() {
-        final FinderNameAndServiceName finderNameAndServiceName
-                = new FinderNameAndServiceName(FINDER_NAME, SERVICE_NAME);
-        assertEquals(this.finderNameAndServiceName, finderNameAndServiceName);
+        final FinderNameAndServiceName actual = new FinderNameAndServiceName(FINDER_NAME, SERVICE_NAME);
+        assertEquals(this.finderNameAndServiceName, actual);
     }
 
     @Test
@@ -103,6 +102,14 @@ public class FinderNameAndServiceNameTest {
         final FinderNameAndServiceName finderNameAndServiceName13
                 = new FinderNameAndServiceName("1", "3");
         assertNotEquals(finderNameAndServiceName12.hashCode(), finderNameAndServiceName13.hashCode());
+    }
+
+    @Test
+    public void testToString() {
+        final String actual = finderNameAndServiceName.toString();
+        final String expected = String.format("%s{finderName='%s', serviceName='%s'}",
+                FinderNameAndServiceName.class.getSimpleName(), FINDER_NAME, SERVICE_NAME);
+        assertEquals(expected, actual);
     }
 
 }
