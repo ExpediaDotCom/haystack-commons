@@ -1,5 +1,10 @@
 # Release Notes
 
+## 1.0.25 / 2018-05-23 Make SpanSecretMasker.Factory.createCounter() return a counter in the "errors" metric group
+Our use of PCI/PII finders has evolved from "detection" to "masking" and the counters that are counting what secret
+data has been found need to show on the same Grafana graph, so that metric names must match, which they did not before
+this change.
+
 ## 1.0.24 / 2018-05-22 Write SpanSecretMasker
 This class masks secrets when they are found in Span objects.
 

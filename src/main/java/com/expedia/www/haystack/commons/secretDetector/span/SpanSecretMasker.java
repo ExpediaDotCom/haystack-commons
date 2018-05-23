@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.expedia.www.haystack.commons.secretDetector.span.SpanDetector.ERRORS_METRIC_GROUP;
+
 /**
  * Finds that tag keys and field keys in a Span that contain secrets.
  */
@@ -62,11 +64,11 @@ public class SpanSecretMasker extends DetectorBase implements ValueMapper<Span, 
     }
 
     public SpanSecretMasker(FinderEngine finderEngine,
-                            Factory detectorFactory,
+                            SpanSecretMasker.Factory spanSecretMasterFactory,
                             SpanS3ConfigFetcher spanS3ConfigFetcher,
                             String application) {
         super(finderEngine, spanS3ConfigFetcher);
-        this.factory = detectorFactory;
+        this.factory = spanSecretMasterFactory;
         this.application = application;
     }
 
@@ -76,7 +78,8 @@ public class SpanSecretMasker extends DetectorBase implements ValueMapper<Span, 
         for (int tagIndex = 0; tagIndex < tags.size(); tagIndex++) {
             final Tag tag = tags.get(tagIndex);
             if (StringUtils.isNotEmpty(tag.getVStr())) {
-                final Map<String, List<String>> mapOfTypeToKeysOfSecrets = getMapOfTypeToKeysOfSecrets(tag, tag.getVStr());
+                final Map<String, List<String>> mapOfTypeToKeysOfSecrets =
+                        getMapOfTypeToKeysOfSecrets(tag, tag.getVStr());
                 if (isNonWhitelistedSecretFound(span, mapOfTypeToKeysOfSecrets)) {
                     spanBuilder = createNewSpanBuilderIfNecessary(span, spanBuilder);
                     final Tag.Builder maskedTagBuilder = mergeTagIntoNewTagBuilder(tag);
@@ -84,8 +87,8 @@ public class SpanSecretMasker extends DetectorBase implements ValueMapper<Span, 
                     spanBuilder.setTags(tagIndex, maskedTagBuilder.build());
                 }
             } else if (!tag.getVBytes().isEmpty()) {
-                @SuppressWarnings("ObjectAllocationInLoop")
-                final String input = new String(tag.getVBytes().toByteArray());
+                @SuppressWarnings("ObjectAllocationInLoop") final String input =
+                        new String(tag.getVBytes().toByteArray());
                 final Map<String, List<String>> mapOfTypeToKeysOfSecrets = getMapOfTypeToKeysOfSecrets(tag, input);
                 if (isNonWhitelistedSecretFound(span, mapOfTypeToKeysOfSecrets)) {
                     spanBuilder = createNewSpanBuilderIfNecessary(span, spanBuilder);
@@ -101,13 +104,14 @@ public class SpanSecretMasker extends DetectorBase implements ValueMapper<Span, 
     @SuppressWarnings("MethodWithMultipleLoops")
     private Span maskSecretsInLogFields(Span span) {
         Span.Builder spanBuilder = null;
-        for (int logIndex = 0 ; logIndex < span.getLogsList().size() ; logIndex++) {
+        for (int logIndex = 0; logIndex < span.getLogsList().size(); logIndex++) {
             final Log log = span.getLogs(logIndex);
             final List<Tag> tags = log.getFieldsList();
             for (int tagIndex = 0; tagIndex < tags.size(); tagIndex++) {
                 final Tag tag = tags.get(tagIndex);
                 if (StringUtils.isNotEmpty(tag.getVStr())) {
-                    final Map<String, List<String>> mapOfTypeToKeysOfSecrets = getMapOfTypeToKeysOfSecrets(tag, tag.getVStr());
+                    final Map<String, List<String>> mapOfTypeToKeysOfSecrets =
+                            getMapOfTypeToKeysOfSecrets(tag, tag.getVStr());
                     if (isNonWhitelistedSecretFound(span, mapOfTypeToKeysOfSecrets)) {
                         spanBuilder = createNewSpanBuilderIfNecessary(span, spanBuilder);
                         final Log.Builder logBuilder = mergeLogIntoNewLogBuilder(log);
@@ -117,8 +121,10 @@ public class SpanSecretMasker extends DetectorBase implements ValueMapper<Span, 
                         spanBuilder.setLogs(logIndex, logBuilder.build());
                     }
                 } else if (!tag.getVBytes().isEmpty()) {
-                    @SuppressWarnings("ObjectAllocationInLoop") final String input = new String(tag.getVBytes().toByteArray());
-                    final Map<String, List<String>> mapOfTypeToKeysOfSecrets = getMapOfTypeToKeysOfSecrets(tag, input);
+                    @SuppressWarnings("ObjectAllocationInLoop") final String input =
+                            new String(tag.getVBytes().toByteArray());
+                    final Map<String, List<String>> mapOfTypeToKeysOfSecrets =
+                            getMapOfTypeToKeysOfSecrets(tag, input);
                     if (isNonWhitelistedSecretFound(span, mapOfTypeToKeysOfSecrets)) {
                         spanBuilder = createNewSpanBuilderIfNecessary(span, spanBuilder);
                         final Log.Builder logBuilder = mergeLogIntoNewLogBuilder(log);
@@ -146,7 +152,7 @@ public class SpanSecretMasker extends DetectorBase implements ValueMapper<Span, 
     }
 
     private static Span.Builder createNewSpanBuilderIfNecessary(Span span, Span.Builder spanBuilder) {
-        if(spanBuilder == null) {
+        if (spanBuilder == null) {
             final Span.Builder newSpanBuilder = Span.newBuilder();
             newSpanBuilder.mergeFrom(span);
             return newSpanBuilder;
@@ -168,7 +174,8 @@ public class SpanSecretMasker extends DetectorBase implements ValueMapper<Span, 
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean areAllSecretsWhitelisted(Span span, Map<String, List<String>> mapOfTypeToKeysOfSecrets) {
-        final Iterator<Map.Entry<String, List<String>>> firstLevelIterator = mapOfTypeToKeysOfSecrets.entrySet().iterator();
+        final Iterator<Map.Entry<String, List<String>>> firstLevelIterator =
+                mapOfTypeToKeysOfSecrets.entrySet().iterator();
         final String serviceName = span.getServiceName();
         final String operationName = span.getOperationName();
         while (firstLevelIterator.hasNext()) {
@@ -214,7 +221,7 @@ public class SpanSecretMasker extends DetectorBase implements ValueMapper<Span, 
         }
 
         Counter createCounter(FinderNameAndServiceName finderAndServiceName, String application) {
-            return metricObjects.createAndRegisterResettingCounter(application,
+            return metricObjects.createAndRegisterResettingCounter(ERRORS_METRIC_GROUP, application,
                     finderAndServiceName.getFinderName(), finderAndServiceName.getServiceName(), COUNTER_NAME);
         }
     }

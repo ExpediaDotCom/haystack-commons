@@ -54,18 +54,18 @@ public class NonLocalIpV4AddressFinder implements Finder {
     public List<String> find(String input) {
         final List<String> strings = IPV4_FINDER.find(input);
         final Iterator<String> iterator = strings.iterator();
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             final String ipAddressFromIpv4Finder = iterator.next();
             final Matcher matcher10Dot = pattern10Dot.matcher(ipAddressFromIpv4Finder);
-            if(matcher10Dot.find()) {
+            if (matcher10Dot.find()) {
                 iterator.remove();
             } else {
                 final Matcher matcher192Dot168 = pattern192Dot168.matcher(ipAddressFromIpv4Finder);
-                if(matcher192Dot168.find()) {
+                if (matcher192Dot168.find()) {
                     iterator.remove();
                 } else {
                     final Matcher matcher127Dot0Dot0 = pattern127Dot0Dot0.matcher(ipAddressFromIpv4Finder);
-                    if(matcher127Dot0Dot0.find()) {
+                    if (matcher127Dot0Dot0.find()) {
                         iterator.remove();
                     }
                 }
