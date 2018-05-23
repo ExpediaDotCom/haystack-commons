@@ -31,6 +31,7 @@ import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCo
 import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCommonCode.STRING_FIELD_KEY;
 import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCommonCode.STRING_TAG_KEY;
 import static com.expedia.www.haystack.commons.secretDetector.span.SpanDetector.COUNTER_NAME;
+import static com.expedia.www.haystack.commons.secretDetector.span.SpanDetector.ERRORS_METRIC_GROUP;
 import static com.expedia.www.haystack.commons.secretDetector.span.SpanSecretMasker.MASKED_BY_HAYSTACK;
 import static com.expedia.www.haystack.commons.secretDetector.span.SpanSecretMasker.MASKED_BY_HAYSTACK_BYTES;
 import static org.junit.Assert.assertArrayEquals;
@@ -171,7 +172,7 @@ public class SpanSecretMaskerTest {
         assertNotEquals(EMAIL_ADDRESS_LOG_SPAN, span);
         assertEquals(MASKED_BY_HAYSTACK, findLogFieldTag(span, STRING_FIELD_KEY).getVStr());
         verify(mockSpanS3ConfigFetcher).isInWhiteList(
-                EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML, SERVICE_NAME, OPERATION_NAME, STRING_FIELD_KEY );
+                EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML, SERVICE_NAME, OPERATION_NAME, STRING_FIELD_KEY);
         verify(mockFactory).createCounter(EMAIL_FINDER_NAME_AND_SERVICE_NAME, APPLICATION);
         verify(mockCounter).increment();
     }
@@ -179,7 +180,7 @@ public class SpanSecretMaskerTest {
     private static Tag findTag(Span span, String key) {
         final List<Tag> tags = span.getTagsList();
         for (Tag tag : tags) {
-            if(tag.getKey().equals(key)) {
+            if (tag.getKey().equals(key)) {
                 return tag;
             }
         }
@@ -191,7 +192,7 @@ public class SpanSecretMaskerTest {
         final List<Log> logs = span.getLogsList();
         for (Log log : logs) {
             for (Tag tag : log.getFieldsList()) {
-                if(tag.getKey().equals(key)) {
+                if (tag.getKey().equals(key)) {
                     return tag;
                 }
             }
@@ -201,13 +202,14 @@ public class SpanSecretMaskerTest {
 
     @Test
     public void testFactoryCreateCounter() {
-        when(mockMetricObjects.createAndRegisterResettingCounter(anyString(), anyString(), anyString(), anyString()))
+        when(mockMetricObjects.createAndRegisterResettingCounter(
+                anyString(), anyString(), anyString(), anyString(), anyString()))
                 .thenReturn(mockCounter);
 
         final Counter counter = factory.createCounter(EMAIL_FINDER_NAME_AND_SERVICE_NAME, APPLICATION);
 
         assertSame(counter, mockCounter);
-        verify(mockMetricObjects).createAndRegisterResettingCounter(
+        verify(mockMetricObjects).createAndRegisterResettingCounter(ERRORS_METRIC_GROUP,
                 APPLICATION, EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML, SERVICE_NAME, COUNTER_NAME);
     }
 }

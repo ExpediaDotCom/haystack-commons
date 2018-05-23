@@ -47,8 +47,7 @@ public class SpanS3ConfigFetcher extends S3ConfigFetcherBase {
     }
 
     public boolean isInWhiteList(String... strings) {
-        @SuppressWarnings("unchecked")
-        final Map<String, Map<String, Map<String, Set<String>>>> finderNameMap =
+        @SuppressWarnings("unchecked") final Map<String, Map<String, Map<String, Set<String>>>> finderNameMap =
                 (Map<String, Map<String, Map<String, Set<String>>>>) getWhiteListItems();
         final Map<String, Map<String, Set<String>>> serviceNameMap = finderNameMap.get(strings[0]);
         if (serviceNameMap != null) {

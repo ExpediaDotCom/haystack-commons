@@ -37,13 +37,14 @@ public class HaystackPhoneNumberFinder implements Finder {
     private final PhoneNumberUtil phoneNumberUtil;
 
     public HaystackPhoneNumberFinder() {
-        this(PhoneNumberUtil.getInstance())   ;
+        this(PhoneNumberUtil.getInstance());
     }
 
     public HaystackPhoneNumberFinder(PhoneNumberUtil phoneNumberUtil) {
         this.phoneNumberUtil = phoneNumberUtil;
     }
 
+    @SuppressWarnings("SuspiciousGetterSetter")
     @Override
     public String getName() {
         return FINDER_NAME;
@@ -52,7 +53,7 @@ public class HaystackPhoneNumberFinder implements Finder {
     @Override
     public List<String> find(Collection<String> inputs) {
         final List<String> list = new ArrayList<>();
-        for(String input : inputs) {
+        for (String input : inputs) {
             list.addAll(find(input));
         }
         return list;
@@ -61,7 +62,7 @@ public class HaystackPhoneNumberFinder implements Finder {
     @Override
     public List<String> find(String input) {
         try {
-            if(!containsAnyAlphabeticCharacters(input) && isNotIpV4Address(input) && !containsOnlyNumbers(input)) {
+            if (!containsAnyAlphabeticCharacters(input) && isNotIpV4Address(input) && !containsOnlyNumbers(input)) {
                 final PhoneNumber phoneNumber = phoneNumberUtil.parseAndKeepRawInput(input, REGION);
                 if (phoneNumberUtil.isValidNumberForRegion(phoneNumber, REGION)) {
                     return Collections.singletonList(phoneNumber.getRawInput());
@@ -73,16 +74,16 @@ public class HaystackPhoneNumberFinder implements Finder {
         return Collections.emptyList();
     }
 
-    private boolean containsAnyAlphabeticCharacters(String input) {
+    private static boolean containsAnyAlphabeticCharacters(String input) {
         final Matcher matcher = ALPHAS_PATTERN.matcher(input);
         return matcher.find();
     }
 
-    private boolean isNotIpV4Address(String input) {
+    private static boolean isNotIpV4Address(String input) {
         return NonLocalIpV4AddressFinder.IPV4_FINDER.find(input).isEmpty();
     }
 
-    private boolean containsOnlyNumbers(String input) {
+    private static boolean containsOnlyNumbers(String input) {
         return ALL_NUMBERS_PATTERN.matcher(input).find();
     }
 }
