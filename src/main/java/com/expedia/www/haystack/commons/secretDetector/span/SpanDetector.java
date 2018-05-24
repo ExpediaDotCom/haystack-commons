@@ -22,11 +22,11 @@ import com.expedia.open.tracing.Tag;
 import com.expedia.www.haystack.commons.secretDetector.DetectorBase;
 import com.expedia.www.haystack.commons.secretDetector.FinderNameAndServiceName;
 import com.expedia.www.haystack.metrics.MetricObjects;
+import com.google.common.base.Strings;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.util.VisibleForTesting;
 import io.dataapps.chlorine.finder.FinderEngine;
 import org.apache.kafka.streams.kstream.ValueMapper;
-import org.apache.maven.shared.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,7 +96,7 @@ public class SpanDetector extends DetectorBase implements ValueMapper<Span, Iter
 
     private void findSecrets(Map<String, List<String>> mapOfTypeToKeysOfSecrets, List<Tag> tags) {
         for (final Tag tag : tags) {
-            if (StringUtils.isNotEmpty(tag.getVStr())) {
+            if (!Strings.isNullOrEmpty(tag.getVStr())) {
                 final String input = tag.getVStr();
                 putKeysOfSecretsIntoMap(mapOfTypeToKeysOfSecrets, tag.getKey(), finderEngine.findWithType(input));
             } else if (!tag.getVBytes().isEmpty()) {
