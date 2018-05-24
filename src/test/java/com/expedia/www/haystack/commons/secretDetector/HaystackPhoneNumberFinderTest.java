@@ -38,12 +38,12 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HaystackPhoneNumberFinderTest {
-    private static final String [] VALID_US_PHONE_NUMBERS = {
+    private static final String[] VALID_US_PHONE_NUMBERS = {
             "1-800-555-1212", "1 (800) 555-1212",
             "800-555-1212", "(800) 555-1212",
     };
 
-    private static final String [] INVALID_US_PHONE_NUMBERS = {
+    private static final String[] INVALID_US_PHONE_NUMBERS = {
             "4640-1234-5678-9120",
             "/minify/min-2487701102.js",
             "50.242.105.69",
@@ -97,7 +97,7 @@ public class HaystackPhoneNumberFinderTest {
         assertEquals(VALID_US_PHONE_NUMBERS.length, strings.size());
         final Iterator<String> phoneNumbersIterator = phoneNumbers.iterator();
         final Iterator<String> stringsIterator = strings.iterator();
-        while(phoneNumbersIterator.hasNext()) {
+        while (phoneNumbersIterator.hasNext()) {
             assertEquals(phoneNumbersIterator.next(), stringsIterator.next());
         }
     }

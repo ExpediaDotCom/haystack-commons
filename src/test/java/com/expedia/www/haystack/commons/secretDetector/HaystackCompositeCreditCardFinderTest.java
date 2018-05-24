@@ -90,14 +90,14 @@ public class HaystackCompositeCreditCardFinderTest {
     @Test
     public void testThatCreditCardValueIsEntireString() {
         haystackCompositeCreditCardFinder = new HaystackCompositeCreditCardFinder();
-        final String [] creditCardNumbers = {
+        final String[] creditCardNumbers = {
                 FAKE_VISA_NUMBER_THAT_PASSES_LUHN,
                 FAKE_VISA_NUMBER_THAT_PASSES_LUHN.replace('-', ' ')
         };
         for (final String creditCardNumber : creditCardNumbers) {
             assertFalse(haystackCompositeCreditCardFinder.find(creditCardNumber).isEmpty());
-            assertTrue(haystackCompositeCreditCardFinder.find("-" + creditCardNumber).isEmpty());
-            assertTrue(haystackCompositeCreditCardFinder.find(creditCardNumber + "-").isEmpty());
+            assertTrue(haystackCompositeCreditCardFinder.find('-' + creditCardNumber).isEmpty());
+            assertTrue(haystackCompositeCreditCardFinder.find(creditCardNumber + '-').isEmpty());
         }
     }
 }

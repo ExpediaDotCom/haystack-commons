@@ -37,10 +37,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import static com.expedia.www.haystack.commons.secretDetector.span.SpanDetector.COUNTER_NAME;
-import static com.expedia.www.haystack.commons.secretDetector.span.SpanDetector.ERRORS_METRIC_GROUP;
-import static com.expedia.www.haystack.commons.secretDetector.span.SpanDetector.FINDERS_TO_LOG;
-import static com.expedia.www.haystack.commons.secretDetector.span.SpanDetector.getEmailText;
 import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCommonCode.BYTES_FIELD_KEY;
 import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCommonCode.BYTES_TAG_KEY;
 import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCommonCode.CREDIT_CARD_LOG_SPAN;
@@ -57,6 +53,10 @@ import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCo
 import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCommonCode.STRING_FIELD_VALUE;
 import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCommonCode.STRING_TAG_KEY;
 import static com.expedia.www.haystack.commons.secretDetector.TestConstantsAndCommonCode.buildSpan;
+import static com.expedia.www.haystack.commons.secretDetector.span.SpanDetector.COUNTER_NAME;
+import static com.expedia.www.haystack.commons.secretDetector.span.SpanDetector.ERRORS_METRIC_GROUP;
+import static com.expedia.www.haystack.commons.secretDetector.span.SpanDetector.FINDERS_TO_LOG;
+import static com.expedia.www.haystack.commons.secretDetector.span.SpanDetector.getEmailText;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;

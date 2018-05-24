@@ -1,5 +1,8 @@
 # Release Notes
 
+## 1.0.29 / 2018-05-24 No functional changes: reformatted code in Java tests
+The 1.0.28 tag was not applied to the correct code, so building 1.0.29.
+
 ## 1.0.28 / 2018-05-24 Use Guava !Strings.isNullOrEmpty() instead of Maven StringUtils.isNotEmpty()
 
 ## 1.0.27 / 2018-05-24 Don't spam logs when white list cannot be fetched from S3 (only write error once per hour)
