@@ -1,5 +1,8 @@
 # Release Notes
 
+## 1.0.30 / 2018-05-24 1.0.28 missed a use of Maven StringUtils.isNotEmpty(); fixed this
+The 1.0.28 tag was not applied to the correct code, so building 1.0.29.
+
 ## 1.0.29 / 2018-05-24 No functional changes: reformatted code in Java tests
 The 1.0.28 tag was not applied to the correct code, so building 1.0.29.
 
