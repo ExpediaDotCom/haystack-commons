@@ -175,7 +175,7 @@ public class SpanS3ConfigFetcherTest {
 
         final Map<String, Map<String, Map<String, Set<String>>>> whiteList =
                 (Map<String, Map<String, Map<String, Set<String>>>>) spanS3ConfigFetcher.getWhiteListItems();
-        assertsForEmptyWhiteList(whiteList, true);
+        assertsForEmptyWhiteList(whiteList, true, 0L);
 
         verify(mockFactory).createCurrentTimeMillis();
     }
@@ -189,7 +189,7 @@ public class SpanS3ConfigFetcherTest {
 
         final Map<String, Map<String, Map<String, Set<String>>>> whiteList =
                 (Map<String, Map<String, Map<String, Set<String>>>>) spanS3ConfigFetcher.getWhiteListItems();
-        assertsForEmptyWhiteList(whiteList, false);
+        assertsForEmptyWhiteList(whiteList, false, MORE_THAN_ONE_HOUR);
 
         verifiesForGetWhiteListItems(1, 1);
         verify(mockS3ConfigFetcherLogger).error(ERROR_MESSAGE, ioException);
@@ -203,7 +203,7 @@ public class SpanS3ConfigFetcherTest {
 
         final Map<String, Map<String, Map<String, Set<String>>>> whiteList =
                 (Map<String, Map<String, Map<String, Set<String>>>>) spanS3ConfigFetcher.getWhiteListItems();
-        assertsForEmptyWhiteList(whiteList, false);
+        assertsForEmptyWhiteList(whiteList, false, MORE_THAN_ONE_HOUR);
 
         verifiesForGetWhiteListItems(1, 1);
         verify(mockS3ConfigFetcherLogger).error(eq(String.format(INVALID_DATA_MSG, ONE_LINE_OF_BAD_DATA, 3)),
@@ -211,9 +211,10 @@ public class SpanS3ConfigFetcherTest {
     }
 
     private void assertsForEmptyWhiteList(Map<String, Map<String, Map<String, Set<String>>>> whiteList,
-                                          boolean isUpdateInProgress) {
+                                          boolean isUpdateInProgress,
+                                          long lastUpdateTime) {
         assertNull(whiteList);
-        assertEquals(0L, spanS3ConfigFetcher.getLastUpdateTimeForTest());
+        assertEquals(lastUpdateTime, spanS3ConfigFetcher.getLastUpdateTimeForTest());
         assertEquals(isUpdateInProgress, spanS3ConfigFetcher.isUpdateInProgressForTest());
     }
 

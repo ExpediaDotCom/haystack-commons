@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.0.27 / 2018-05-24 Don't spam logs when white list cannot be fetched from S3 (only write error once per hour)
+
+## 1.0.26 / 2018-05-24 Make more dependencies provided
+
 ## 1.0.25 / 2018-05-23 Make SpanSecretMasker.Factory.createCounter() return a counter in the "errors" metric group
 Our use of PCI/PII finders has evolved from "detection" to "masking" and the counters that are counting what secret
 data has been found need to show on the same Grafana graph, so that metric names must match, which they did not before

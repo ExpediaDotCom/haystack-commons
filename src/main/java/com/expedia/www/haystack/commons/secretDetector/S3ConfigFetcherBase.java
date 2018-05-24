@@ -111,7 +111,6 @@ public abstract class S3ConfigFetcherBase {
             if (isUpdateInProgress.compareAndSet(false, true)) {
                 try {
                     whiteList.set(readAllWhiteListItemsFromS3());
-                    lastUpdateTime.set(now);
                     logger.info(SUCCESSFUL_WHITELIST_UPDATE_MSG);
                 } catch (InvalidWhitelistItemInputException e) {
                     logger.error(e.getMessage(), e);
@@ -119,6 +118,8 @@ public abstract class S3ConfigFetcherBase {
                     logger.error(ERROR_MESSAGE, e);
                 } finally {
                     isUpdateInProgress.set(false);
+                    // Set last update time for successes and failures, to avoid log spamming for a persistent error
+                    lastUpdateTime.set(now);
                 }
             }
         }
