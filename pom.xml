@@ -133,12 +133,14 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>com.googlecode.libphonenumber</groupId>
             <artifactId>libphonenumber</artifactId>
             <version>${libphonenumber.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -151,18 +153,21 @@
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
             <version>${aws-java-sdk.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>com.typesafe</groupId>
             <artifactId>config</artifactId>
             <version>${typesafe-config.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>build-helper-maven-plugin</artifactId>
             <version>${build-helper-maven-plugin.version}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -205,12 +210,14 @@
             <groupId>io.dataapps.chlorine</groupId>
             <artifactId>chlorine-finder</artifactId>
             <version>${chlorine-finder.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.cfg4j</groupId>
             <artifactId>cfg4j-core</artifactId>
             <version>${cfg4j-core.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -230,6 +237,7 @@
             <groupId>com.codahale.metrics</groupId>
             <artifactId>metrics-core</artifactId>
             <version>${metrics-core.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
