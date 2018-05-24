@@ -22,12 +22,12 @@ import com.expedia.open.tracing.Tag;
 import com.expedia.www.haystack.commons.secretDetector.DetectorBase;
 import com.expedia.www.haystack.commons.secretDetector.FinderNameAndServiceName;
 import com.expedia.www.haystack.metrics.MetricObjects;
+import com.google.common.base.Strings;
 import com.google.protobuf.ByteString;
 import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.util.VisibleForTesting;
 import io.dataapps.chlorine.finder.FinderEngine;
 import org.apache.kafka.streams.kstream.ValueMapper;
-import org.apache.maven.shared.utils.StringUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -77,7 +77,7 @@ public class SpanSecretMasker extends DetectorBase implements ValueMapper<Span, 
         Span.Builder spanBuilder = null;
         for (int tagIndex = 0; tagIndex < tags.size(); tagIndex++) {
             final Tag tag = tags.get(tagIndex);
-            if (StringUtils.isNotEmpty(tag.getVStr())) {
+            if (!Strings.isNullOrEmpty(tag.getVStr())) {
                 final Map<String, List<String>> mapOfTypeToKeysOfSecrets =
                         getMapOfTypeToKeysOfSecrets(tag, tag.getVStr());
                 if (isNonWhitelistedSecretFound(span, mapOfTypeToKeysOfSecrets)) {
@@ -109,7 +109,7 @@ public class SpanSecretMasker extends DetectorBase implements ValueMapper<Span, 
             final List<Tag> tags = log.getFieldsList();
             for (int tagIndex = 0; tagIndex < tags.size(); tagIndex++) {
                 final Tag tag = tags.get(tagIndex);
-                if (StringUtils.isNotEmpty(tag.getVStr())) {
+                if (!Strings.isNullOrEmpty(tag.getVStr())) {
                     final Map<String, List<String>> mapOfTypeToKeysOfSecrets =
                             getMapOfTypeToKeysOfSecrets(tag, tag.getVStr());
                     if (isNonWhitelistedSecretFound(span, mapOfTypeToKeysOfSecrets)) {
