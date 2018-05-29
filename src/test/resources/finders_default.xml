@@ -14,11 +14,6 @@
 		<enabled>true</enabled>
 	</finder>
 	<finder>
-		<name>US Phone#Formatted</name>
-		<pattern>(\D|^)[0-9]{3}[\)\ \-\.]{1,2}[0-9]{3}[\-\ \.][0-9]{4}(\D|$)</pattern>
-		<enabled>true</enabled>
-	</finder>
-	<finder>
 		<class>com.expedia.www.haystack.commons.secretDetector.NonLocalIpV4AddressFinder</class>
 		<name>NonLocalIpV4</name>
 		<enabled>true</enabled>
