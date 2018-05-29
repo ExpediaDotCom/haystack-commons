@@ -38,9 +38,10 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HaystackPhoneNumberFinderTest {
-    private static final String[] VALID_US_PHONE_NUMBERS = {
-            "1-800-555-1212", "1 (800) 555-1212",
-            "800-555-1212", "(800) 555-1212",
+    private static final String[] VALID_PHONE_NUMBERS = {
+            "1-800-555-1212", "1 (800) 555-1212", "800-555-1212", "(800) 555-1212", // US
+            "+33.06.23.12.45.54",                                                   // France
+            "(020) 1234 5678",                                                      // UK (London)
     };
 
     private static final String[] INVALID_US_PHONE_NUMBERS = {
@@ -76,7 +77,7 @@ public class HaystackPhoneNumberFinderTest {
 
     @Test
     public void testFindStringValidNumbers() {
-        for (String phoneNumber : VALID_US_PHONE_NUMBERS) {
+        for (String phoneNumber : VALID_PHONE_NUMBERS) {
             final List<String> strings = haystackPhoneNumberFinder.find(phoneNumber);
             assertEquals(phoneNumber, 1, strings.size());
         }
@@ -92,9 +93,9 @@ public class HaystackPhoneNumberFinderTest {
 
     @Test
     public void testFindStringsValidNumbers() {
-        final List<String> phoneNumbers = Arrays.asList(VALID_US_PHONE_NUMBERS);
+        final List<String> phoneNumbers = Arrays.asList(VALID_PHONE_NUMBERS);
         final List<String> strings = haystackPhoneNumberFinder.find(phoneNumbers);
-        assertEquals(VALID_US_PHONE_NUMBERS.length, strings.size());
+        assertEquals(VALID_PHONE_NUMBERS.length, strings.size());
         final Iterator<String> phoneNumbersIterator = phoneNumbers.iterator();
         final Iterator<String> stringsIterator = strings.iterator();
         while (phoneNumbersIterator.hasNext()) {
@@ -115,9 +116,9 @@ public class HaystackPhoneNumberFinderTest {
                 new NumberParseException(NumberParseException.ErrorType.TOO_LONG, "Test"));
         haystackPhoneNumberFinder = new HaystackPhoneNumberFinder(mockPhoneNumberUtil);
 
-        final List<String> phoneNumbers = haystackPhoneNumberFinder.find(VALID_US_PHONE_NUMBERS[0]);
+        final List<String> phoneNumbers = haystackPhoneNumberFinder.find(VALID_PHONE_NUMBERS[0]);
 
         assertTrue(phoneNumbers.isEmpty());
-        verify(mockPhoneNumberUtil).parseAndKeepRawInput(VALID_US_PHONE_NUMBERS[0], "US");
+        verify(mockPhoneNumberUtil).parseAndKeepRawInput(VALID_PHONE_NUMBERS[0], "US");
     }
 }

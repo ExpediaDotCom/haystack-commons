@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.0.31 / 2018-05-24 Look for GB and FR phone numbers
+If this scales, additional Western European regions will be added.
+Also made the IP v4 checker regular expression more correct.
+
 ## 1.0.30 / 2018-05-24 1.0.28 missed a use of Maven StringUtils.isNotEmpty(); fixed this
 The 1.0.28 tag was not applied to the correct code, so building 1.0.29.
 

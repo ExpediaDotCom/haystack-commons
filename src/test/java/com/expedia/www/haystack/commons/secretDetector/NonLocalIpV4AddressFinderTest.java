@@ -37,9 +37,11 @@ public class NonLocalIpV4AddressFinderTest {
             RANDOM.nextInt(IP_V4_PIECE_MAX), RANDOM.nextInt(IP_V4_PIECE_MAX), RANDOM.nextInt(IP_V4_PIECE_MAX));
     private static final String ONE92_DOT_168_ADDRESS = String.format(ONE92_DOT_168_FORMAT,
             RANDOM.nextInt(IP_V4_PIECE_MAX), RANDOM.nextInt(IP_V4_PIECE_MAX));
+    @SuppressWarnings("NonConstantFieldWithUpperCaseName")
     private static String NON_INTERNAL_IP_V4_ADDRESS;
 
     static {
+        //noinspection NonFinalStaticVariableUsedInClassInitialization
         do {
             NON_INTERNAL_IP_V4_ADDRESS = String.format("%d.%d.%d.%d", RANDOM.nextInt(IP_V4_PIECE_MAX),
                     RANDOM.nextInt(IP_V4_PIECE_MAX), RANDOM.nextInt(IP_V4_PIECE_MAX), RANDOM.nextInt(IP_V4_PIECE_MAX));
@@ -76,8 +78,13 @@ public class NonLocalIpV4AddressFinderTest {
     }
 
     @Test
-    public void test10DotAndLocalHostTogether() {
-        testAddressIsInternal("10.38.85.225, 127.0.0.1");
+    public void test10Dot() {
+        testAddressIsInternal("10.38.85.225");
+    }
+
+    @Test
+    public void testLocalHost() {
+        testAddressIsInternal("127.0.0.1");
     }
 
     private void testAddressIsInternal(String address) {
@@ -89,7 +96,7 @@ public class NonLocalIpV4AddressFinderTest {
     public void testFindCollection() {
         final List<String> internalAddresses = ImmutableList.of(TEN_DOT_ADDRESS, ONE92_DOT_168_ADDRESS);
         final String message = String.format(SHOULD_NOT_BE_SECRET_FORMAT,
-                TEN_DOT_ADDRESS + "," + ONE92_DOT_168_ADDRESS);
+                TEN_DOT_ADDRESS + ',' + ONE92_DOT_168_ADDRESS);
         assertTrue(message, nonLocalIpV4AddressFinder.find(internalAddresses).isEmpty());
     }
 

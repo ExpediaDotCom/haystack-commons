@@ -30,7 +30,8 @@ import java.util.regex.Pattern;
  * Finds IP V4 addresses, but ignores those in the 10.0.0.0/8, 192.168.0.0/16, and 127.0.0.0/8 ranges.
  */
 public class NonLocalIpV4AddressFinder implements Finder {
-    static final Finder IPV4_FINDER = new RegexFinder("IPV4", "(?:[0-9]{1,3}\\.){3}[0-9]{1,3}");
+    static final Finder IPV4_FINDER = new RegexFinder("IPV4",
+            "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
 
     private final Pattern pattern10Dot = Pattern.compile("(^10\\.)");
     private final Pattern pattern192Dot168 = Pattern.compile("(^192\\.168\\.)");
