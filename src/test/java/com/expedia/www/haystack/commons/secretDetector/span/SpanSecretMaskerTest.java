@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
 
 import java.util.List;
 
@@ -59,6 +60,9 @@ public class SpanSecretMaskerTest {
             new FinderNameAndServiceName(IP_FINDER_NAME, SERVICE_NAME);
 
     @Mock
+    private Logger mockLogger;
+
+    @Mock
     private Factory mockFactory;
 
     @Mock
@@ -75,14 +79,15 @@ public class SpanSecretMaskerTest {
 
     @Before
     public void setUp() {
-        spanSecretMasker = new SpanSecretMasker(FINDER_ENGINE, mockFactory, mockSpanS3ConfigFetcher, APPLICATION);
+        spanSecretMasker =
+                new SpanSecretMasker(mockLogger, FINDER_ENGINE, mockFactory, mockSpanS3ConfigFetcher, APPLICATION);
         factory = new Factory(mockMetricObjects);
     }
 
     @After
     public void tearDown() {
         SpanSecretMasker.COUNTERS.clear();
-        verifyNoMoreInteractions(mockFactory, mockSpanS3ConfigFetcher, mockCounter, mockMetricObjects);
+        verifyNoMoreInteractions(mockLogger, mockFactory, mockSpanS3ConfigFetcher, mockCounter, mockMetricObjects);
     }
 
     @Test

@@ -28,6 +28,8 @@ import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.util.VisibleForTesting;
 import io.dataapps.chlorine.finder.FinderEngine;
 import org.apache.kafka.streams.kstream.ValueMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,90 +58,128 @@ public class SpanSecretMasker extends DetectorBase implements ValueMapper<Span, 
     private static final ByteString MASKED_BY_HAYSTACK_BYTE_STRING = ByteString.copyFrom(MASKED_BY_HAYSTACK_BYTES);
     private final Factory factory;
     private final String application;
+    private final Logger logger;
 
     public SpanSecretMasker(String bucket, String application) {
-        this(new FinderEngine(),
+        this(LoggerFactory.getLogger(SpanSecretMasker.class),
+                new FinderEngine(),
                 new Factory(),
                 new SpanS3ConfigFetcher(bucket, "secret-detector/whiteListItems.txt"), application);
     }
 
-    public SpanSecretMasker(FinderEngine finderEngine,
+    public SpanSecretMasker(Logger logger,
+                            FinderEngine finderEngine,
                             SpanSecretMasker.Factory spanSecretMasterFactory,
                             SpanS3ConfigFetcher spanS3ConfigFetcher,
                             String application) {
         super(finderEngine, spanS3ConfigFetcher);
+        this.logger = logger;
         this.factory = spanSecretMasterFactory;
         this.application = application;
     }
 
+    private static class BuildersForTags {
+        Span.Builder spanBuilder;
+        Tag.Builder tagBuilder;
+    }
+
     private Span maskSecretsInTags(Span span) {
         final List<Tag> tags = span.getTagsList();
-        Span.Builder spanBuilder = null;
+        BuildersForTags buildersForTags = null;
         for (int tagIndex = 0; tagIndex < tags.size(); tagIndex++) {
             final Tag tag = tags.get(tagIndex);
             if (!Strings.isNullOrEmpty(tag.getVStr())) {
-                final Map<String, List<String>> mapOfTypeToKeysOfSecrets =
-                        getMapOfTypeToKeysOfSecrets(tag, tag.getVStr());
+                final Map<String, List<String>> mapOfTypeToKeysOfSecrets = findSecrets(tag, tag.getVStr());
                 if (isNonWhitelistedSecretFound(span, mapOfTypeToKeysOfSecrets)) {
-                    spanBuilder = createNewSpanBuilderIfNecessary(span, spanBuilder);
-                    final Tag.Builder maskedTagBuilder = mergeTagIntoNewTagBuilder(tag);
-                    maskedTagBuilder.setVStr(MASKED_BY_HAYSTACK);
-                    spanBuilder.setTags(tagIndex, maskedTagBuilder.build());
+                    buildersForTags = prepareForBuild(span, tag, buildersForTags);
+                    buildersForTags.tagBuilder.setVStr(MASKED_BY_HAYSTACK);
+                    buildIntoTags(buildersForTags, tagIndex);
                 }
             } else if (!tag.getVBytes().isEmpty()) {
-                @SuppressWarnings("ObjectAllocationInLoop") final String input =
-                        new String(tag.getVBytes().toByteArray());
-                final Map<String, List<String>> mapOfTypeToKeysOfSecrets = getMapOfTypeToKeysOfSecrets(tag, input);
+                @SuppressWarnings("ObjectAllocationInLoop") final String input = new String(tag.getVBytes().toByteArray());
+                final Map<String, List<String>> mapOfTypeToKeysOfSecrets = findSecrets(tag, input);
                 if (isNonWhitelistedSecretFound(span, mapOfTypeToKeysOfSecrets)) {
-                    spanBuilder = createNewSpanBuilderIfNecessary(span, spanBuilder);
-                    final Tag.Builder maskedTagBuilder = mergeTagIntoNewTagBuilder(tag);
-                    maskedTagBuilder.setVBytes(MASKED_BY_HAYSTACK_BYTE_STRING);
-                    spanBuilder.setTags(tagIndex, maskedTagBuilder.build());
+                    buildersForTags = prepareForBuild(span, tag, buildersForTags);
+                    buildersForTags.tagBuilder.setVBytes(MASKED_BY_HAYSTACK_BYTE_STRING);
+                    buildIntoTags(buildersForTags, tagIndex);
                 }
             }
         }
-        return (spanBuilder == null) ? span : spanBuilder.build();
+        return (buildersForTags == null) ? span : buildersForTags.spanBuilder.build();
+    }
+
+    private static void buildIntoTags(BuildersForTags buildersForTags, int tagIndex) {
+        buildersForTags.spanBuilder.setTags(tagIndex, buildersForTags.tagBuilder.build());
+    }
+
+    private static BuildersForTags prepareForBuild(Span span,
+                                                   Tag tag,
+                                                   BuildersForTags buildersForTags) {
+        final BuildersForTags buildersForTagsToUseForBuildCalls =
+                (buildersForTags == null) ? new BuildersForTags() : buildersForTags;
+        if (buildersForTagsToUseForBuildCalls.spanBuilder == null) {
+            buildersForTagsToUseForBuildCalls.spanBuilder = Span.newBuilder();
+            buildersForTagsToUseForBuildCalls.spanBuilder.mergeFrom(span);
+        }
+        buildersForTagsToUseForBuildCalls.tagBuilder = mergeTagIntoNewTagBuilder(tag);
+        return buildersForTagsToUseForBuildCalls;
+    }
+
+    private static class BuildersForLogFields extends BuildersForTags {
+        Log.Builder logBuilder;
     }
 
     @SuppressWarnings("MethodWithMultipleLoops")
     private Span maskSecretsInLogFields(Span span) {
-        Span.Builder spanBuilder = null;
+        BuildersForLogFields buildersForLogFields = null;
         for (int logIndex = 0; logIndex < span.getLogsList().size(); logIndex++) {
             final Log log = span.getLogs(logIndex);
             final List<Tag> tags = log.getFieldsList();
             for (int tagIndex = 0; tagIndex < tags.size(); tagIndex++) {
                 final Tag tag = tags.get(tagIndex);
                 if (!Strings.isNullOrEmpty(tag.getVStr())) {
-                    final Map<String, List<String>> mapOfTypeToKeysOfSecrets =
-                            getMapOfTypeToKeysOfSecrets(tag, tag.getVStr());
+                    final Map<String, List<String>> mapOfTypeToKeysOfSecrets = findSecrets(tag, tag.getVStr());
                     if (isNonWhitelistedSecretFound(span, mapOfTypeToKeysOfSecrets)) {
-                        spanBuilder = createNewSpanBuilderIfNecessary(span, spanBuilder);
-                        final Log.Builder logBuilder = mergeLogIntoNewLogBuilder(log);
-                        final Tag.Builder maskedTagBuilder = mergeTagIntoNewTagBuilder(tag);
-                        maskedTagBuilder.setVStr(MASKED_BY_HAYSTACK);
-                        logBuilder.setFields(tagIndex, maskedTagBuilder.build());
-                        spanBuilder.setLogs(logIndex, logBuilder.build());
+                        buildersForLogFields = prepareForBuild(span, tag, log, buildersForLogFields);
+                        buildersForLogFields.tagBuilder.setVStr(MASKED_BY_HAYSTACK);
+                        buildIntoLogFields(buildersForLogFields, logIndex, tagIndex);
                     }
                 } else if (!tag.getVBytes().isEmpty()) {
                     @SuppressWarnings("ObjectAllocationInLoop") final String input =
                             new String(tag.getVBytes().toByteArray());
-                    final Map<String, List<String>> mapOfTypeToKeysOfSecrets =
-                            getMapOfTypeToKeysOfSecrets(tag, input);
+                    final Map<String, List<String>> mapOfTypeToKeysOfSecrets = findSecrets(tag, input);
                     if (isNonWhitelistedSecretFound(span, mapOfTypeToKeysOfSecrets)) {
-                        spanBuilder = createNewSpanBuilderIfNecessary(span, spanBuilder);
-                        final Log.Builder logBuilder = mergeLogIntoNewLogBuilder(log);
-                        final Tag.Builder maskedTagBuilder = mergeTagIntoNewTagBuilder(tag);
-                        maskedTagBuilder.setVBytes(MASKED_BY_HAYSTACK_BYTE_STRING);
-                        logBuilder.setFields(tagIndex, maskedTagBuilder.build());
-                        spanBuilder.setLogs(logIndex, logBuilder.build());
+                        buildersForLogFields = prepareForBuild(span, tag, log, buildersForLogFields);
+                        buildersForLogFields.tagBuilder.setVBytes(MASKED_BY_HAYSTACK_BYTE_STRING);
+                        buildIntoLogFields(buildersForLogFields, logIndex, tagIndex);
                     }
                 }
             }
         }
-        return (spanBuilder == null) ? span : spanBuilder.build();
+        return (buildersForLogFields == null) ? span : buildersForLogFields.spanBuilder.build();
     }
 
-    private Map<String, List<String>> getMapOfTypeToKeysOfSecrets(Tag tag, String input) {
+    private static void buildIntoLogFields(BuildersForLogFields buildersForLogFields, int logIndex, int tagIndex) {
+        buildersForLogFields.logBuilder.setFields(tagIndex, buildersForLogFields.tagBuilder.build());
+        buildersForLogFields.spanBuilder.setLogs(logIndex, buildersForLogFields.logBuilder.build());
+    }
+
+    private static BuildersForLogFields prepareForBuild(Span span,
+                                                        Tag tag,
+                                                        Log log,
+                                                        BuildersForLogFields buildersForLogFields) {
+        final BuildersForLogFields buildersForLogFieldsToUseForBuildCalls =
+                (buildersForLogFields == null) ? new BuildersForLogFields() : buildersForLogFields;
+        if (buildersForLogFieldsToUseForBuildCalls.spanBuilder == null) {
+            buildersForLogFieldsToUseForBuildCalls.spanBuilder = Span.newBuilder();
+            buildersForLogFieldsToUseForBuildCalls.spanBuilder.mergeFrom(span);
+        }
+        buildersForLogFieldsToUseForBuildCalls.logBuilder = mergeLogIntoNewLogBuilder(log);
+        buildersForLogFieldsToUseForBuildCalls.tagBuilder = mergeTagIntoNewTagBuilder(tag);
+        return buildersForLogFieldsToUseForBuildCalls;
+    }
+
+    private Map<String, List<String>> findSecrets(Tag tag, String input) {
         final Map<String, List<String>> mapOfTypeToValuesOfSecrets = finderEngine.findWithType(input);
         for (Map.Entry<String, List<String>> stringListEntry : mapOfTypeToValuesOfSecrets.entrySet()) {
             stringListEntry.getValue().replaceAll(s -> tag.getKey());
@@ -149,15 +189,6 @@ public class SpanSecretMasker extends DetectorBase implements ValueMapper<Span, 
 
     private boolean isNonWhitelistedSecretFound(Span span, Map<String, List<String>> mapOfTypeToKeysOfSecrets) {
         return !mapOfTypeToKeysOfSecrets.isEmpty() && !areAllSecretsWhitelisted(span, mapOfTypeToKeysOfSecrets);
-    }
-
-    private static Span.Builder createNewSpanBuilderIfNecessary(Span span, Span.Builder spanBuilder) {
-        if (spanBuilder == null) {
-            final Span.Builder newSpanBuilder = Span.newBuilder();
-            newSpanBuilder.mergeFrom(span);
-            return newSpanBuilder;
-        }
-        return spanBuilder;
     }
 
     private static Log.Builder mergeLogIntoNewLogBuilder(Log log) {
