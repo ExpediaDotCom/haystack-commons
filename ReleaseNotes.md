@@ -1,5 +1,8 @@
 # Release Notes
 
+## 1.0.32 / 2018-05-30 Refactoring in preparation for secret ID logging
+There are no plans to release this code until the secret ID logging is in place.
+
 ## 1.0.31 / 2018-05-24 Look for GB and FR phone numbers
 If this scales, additional Western European regions will be added.
 Also made the IP v4 checker regular expression more correct.
