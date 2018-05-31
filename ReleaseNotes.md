@@ -1,5 +1,8 @@
 # Release Notes
 
+## 1.0.33 / 2018-05-31 Add SpanNameAndCountRecorder
+There are no plans to release this code until the secret ID logging is in place.
+
 ## 1.0.32 / 2018-05-30 Refactoring in preparation for secret ID logging
 There are no plans to release this code until the secret ID logging is in place.
 
