@@ -28,9 +28,9 @@ import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.util.VisibleForTesting;
 import io.dataapps.chlorine.finder.FinderEngine;
 import org.apache.kafka.streams.kstream.ValueMapper;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Clock;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -58,23 +58,25 @@ public class SpanSecretMasker extends DetectorBase implements ValueMapper<Span, 
     private static final ByteString MASKED_BY_HAYSTACK_BYTE_STRING = ByteString.copyFrom(MASKED_BY_HAYSTACK_BYTES);
     private final Factory factory;
     private final String application;
-    private final Logger logger;
+    private final SpanNameAndCountRecorder spanNameAndCountRecorder;
 
     public SpanSecretMasker(String bucket, String application) {
-        this(LoggerFactory.getLogger(SpanSecretMasker.class),
-                new FinderEngine(),
+        //noinspection LoggerInitializedWithForeignClass
+        this(new FinderEngine(),
                 new Factory(),
-                new SpanS3ConfigFetcher(bucket, "secret-detector/whiteListItems.txt"), application);
+                new SpanS3ConfigFetcher(bucket, "secret-detector/whiteListItems.txt"),
+                new SpanNameAndCountRecorder(LoggerFactory.getLogger(SpanNameAndCountRecorder.class), Clock.systemUTC()),
+                application);
     }
 
-    public SpanSecretMasker(Logger logger,
-                            FinderEngine finderEngine,
+    public SpanSecretMasker(FinderEngine finderEngine,
                             SpanSecretMasker.Factory spanSecretMasterFactory,
                             SpanS3ConfigFetcher spanS3ConfigFetcher,
+                            SpanNameAndCountRecorder spanNameAndCountRecorder,
                             String application) {
         super(finderEngine, spanS3ConfigFetcher);
-        this.logger = logger;
         this.factory = spanSecretMasterFactory;
+        this.spanNameAndCountRecorder = spanNameAndCountRecorder;
         this.application = application;
     }
 
@@ -203,7 +205,7 @@ public class SpanSecretMasker extends DetectorBase implements ValueMapper<Span, 
         return maskedTagBuilder;
     }
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    @SuppressWarnings({"BooleanMethodIsAlwaysInverted", "MethodWithMultipleLoops"})
     private boolean areAllSecretsWhitelisted(Span span, Map<String, List<String>> mapOfTypeToKeysOfSecrets) {
         final Iterator<Map.Entry<String, List<String>>> firstLevelIterator =
                 mapOfTypeToKeysOfSecrets.entrySet().iterator();
@@ -217,6 +219,9 @@ public class SpanSecretMasker extends DetectorBase implements ValueMapper<Span, 
             if (finderNameToKeysOfSecrets.getValue().isEmpty()) {
                 firstLevelIterator.remove();
             } else {
+                for (String tagName : finderNameToKeysOfSecrets.getValue()) {
+                    spanNameAndCountRecorder.add(finderName, serviceName, operationName, tagName);
+                }
                 incrementCounter(serviceName, finderName, application);
             }
         }

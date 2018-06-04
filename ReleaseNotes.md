@@ -1,5 +1,8 @@
 # Release Notes
 
+## 1.0.34 / 2018-06-04 Add SpanNameAndCountRecorder
+Finish implementing secret ID logging for spans.
+
 ## 1.0.33 / 2018-05-31 Add SpanNameAndCountRecorder
 There are no plans to release this code until the secret ID logging is in place.
 
