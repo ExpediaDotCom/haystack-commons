@@ -35,7 +35,7 @@ public class SpanNameAndCountRecorder {
     private final AtomicLong lastLogTimeMS = new AtomicLong(0);
     private final Clock clock;
 
-    SpanNameAndCountRecorder(Logger logger, Clock clock) {
+    public SpanNameAndCountRecorder(Logger logger, Clock clock) {
         this.logger = logger;
         this.clock = clock;
     }
