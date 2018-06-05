@@ -1,5 +1,8 @@
 # Release Notes
 
+## 1.0.36 / 2018-06-04 Put back the -SNAPSHOT in pom.xml
+Not having it makes the Travis build fail.
+
 ## 1.0.35 / 2018-06-04 Make SpanNameAndCountRecorder constructor public
 Also fixed a typo in a variable name.
 
