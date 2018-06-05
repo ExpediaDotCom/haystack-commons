@@ -1,5 +1,11 @@
 # Release Notes
 
+## 1.0.37 / 2018-06-05 No code changes
+Handle last logged time properly at startup
+
+## 1.0.36 / 2018-06-04 No code changes
+Had to tag again
+
 ## 1.0.35 / 2018-06-04 Make SpanNameAndCountRecorder constructor public
 Also fixed a typo in a variable name.
 
