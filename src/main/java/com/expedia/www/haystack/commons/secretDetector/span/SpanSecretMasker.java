@@ -70,12 +70,12 @@ public class SpanSecretMasker extends DetectorBase implements ValueMapper<Span, 
     }
 
     public SpanSecretMasker(FinderEngine finderEngine,
-                            SpanSecretMasker.Factory spanSecretMasterFactory,
+                            SpanSecretMasker.Factory spanSecretMaskerFactory,
                             SpanS3ConfigFetcher spanS3ConfigFetcher,
                             SpanNameAndCountRecorder spanNameAndCountRecorder,
                             String application) {
         super(finderEngine, spanS3ConfigFetcher);
-        this.factory = spanSecretMasterFactory;
+        this.factory = spanSecretMaskerFactory;
         this.spanNameAndCountRecorder = spanNameAndCountRecorder;
         this.application = application;
     }

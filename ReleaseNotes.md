@@ -1,5 +1,8 @@
 # Release Notes
 
+## 1.0.35 / 2018-06-04 Make SpanNameAndCountRecorder constructor public
+Also fixed a typo in a variable name.
+
 ## 1.0.34 / 2018-06-04 Add SpanNameAndCountRecorder
 Finish implementing secret ID logging for spans.
 
