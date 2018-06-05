@@ -59,7 +59,11 @@ public class SpanNameAndCountRecorder {
                     final Set<String> spanNamesWithCounts = (Set<String>) loop(new TreeSet<>(),
                             toStringAction, clearAction);
                     logger.info(String.format(CONFIDENTIAL_DATA_LOCATIONS, spanNamesWithCounts));
-                    lastLogTimeMS.addAndGet(ONE_HOUR);
+                    if(lastLogTimeMS.get() == 0) {
+                        lastLogTimeMS.set(now);
+                    } else {
+                        lastLogTimeMS.addAndGet(ONE_HOUR);
+                    }
                 }
             }
         }
@@ -76,8 +80,8 @@ public class SpanNameAndCountRecorder {
      * value in the actions parameter is the logging use case from
      * {@link SpanNameAndCountRecorder#add(String, String, String, String)} in which the first Action is
      * {@link SpanNameAndCountRecorder#toStringAction} and the second action is
-     * {@link SpanNameAndCountRecorder#clearAction}. Because there is no synchronization in the (innermost) loop over
-     * actions), it's possible for another thread to call
+     * {@link SpanNameAndCountRecorder#clearAction}. Because there is no synchronization in the innermost loop of this
+     * method (the loop over actions), it's possible for another thread to call
      * {@link SpanNameAndCountRecorder#add(String, String, String, String)} between the actions; this is the reason for
      * the statement "spans seen near the time at which the confidential data locations are logged (calls by
      * other threads, obviously) may not be tracked" in the Javadoc for this class.
@@ -88,17 +92,20 @@ public class SpanNameAndCountRecorder {
      */
     @SuppressWarnings("MethodWithMultipleLoops")
     private Object loop(Object object, Action... actions) {
-        for (Map.Entry<String, Map<String, Map<String, Map<String, AtomicInteger>>>> finderNameEntrySet
-                : map.entrySet()) {
-            for (Map.Entry<String, Map<String, Map<String, AtomicInteger>>> serviceNameEntrySet
-                    : finderNameEntrySet.getValue().entrySet()) {
-                for (Map.Entry<String, Map<String, AtomicInteger>> operationNameEntrySet
-                        : serviceNameEntrySet.getValue().entrySet()) {
-                    for (final Map.Entry<String, AtomicInteger> tagNameAndCount
-                            : operationNameEntrySet.getValue().entrySet()) {
+        for (Map.Entry<String, Map<String, Map<String, Map<String, AtomicInteger>>>>
+                finderNameEntrySet : map.entrySet()) {
+            for (Map.Entry<String, Map<String, Map<String, AtomicInteger>>>
+                    serviceNameEntrySet : finderNameEntrySet.getValue().entrySet()) {
+                for (Map.Entry<String, Map<String, AtomicInteger>>
+                        operationNameEntrySet : serviceNameEntrySet.getValue().entrySet()) {
+                    for (final Map.Entry<String, AtomicInteger>
+                            tagNameAndCount : operationNameEntrySet.getValue().entrySet()) {
                         for (final Action action : actions) {
-                            action.execute(object, finderNameEntrySet.getKey(), serviceNameEntrySet.getKey(),
-                                    operationNameEntrySet.getKey(), tagNameAndCount);
+                            action.execute(object,
+                                    finderNameEntrySet.getKey(),
+                                    serviceNameEntrySet.getKey(),
+                                    operationNameEntrySet.getKey(),
+                                    tagNameAndCount);
                         }
                     }
                 }

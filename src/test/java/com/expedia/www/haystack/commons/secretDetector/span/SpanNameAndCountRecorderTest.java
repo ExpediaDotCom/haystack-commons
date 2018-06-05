@@ -46,6 +46,8 @@ public class SpanNameAndCountRecorderTest {
 
     private SpanNameAndCountRecorder spanNameAndCountRecorder;
 
+    private int countOfAddCalls;
+
     @SuppressWarnings("MethodWithMultipleLoops")
     @Before
     public void setUp() {
@@ -57,7 +59,7 @@ public class SpanNameAndCountRecorderTest {
                     for (String tagKey : TAG_NAMES) {
                         count++;
                         for (int i = 0; i < count; i++) {
-                            spanNameAndCountRecorder.add(finderName, serviceName, operationName, tagKey);
+                            add(finderName, serviceName, operationName, tagKey);
                         }
                     }
                 }
@@ -72,50 +74,39 @@ public class SpanNameAndCountRecorderTest {
 
     @Test
     public void testToString() {
-        final String expected = String.format(FORMAT,
-                F1, S1, O1, T1, 16,
-                F1, S1, O1, T2, 15,
-                F1, S1, O2, T1, 14,
-                F1, S1, O2, T2, 13,
-                F1, S2, O1, T1, 12,
-                F1, S2, O1, T2, 11,
-                F1, S2, O2, T1, 10,
-                F1, S2, O2, T2, 9,
-                F2, S1, O1, T1, 8,
-                F2, S1, O1, T2, 7,
-                F2, S1, O2, T1, 6,
-                F2, S1, O2, T2, 5,
-                F2, S2, O1, T1, 4,
-                F2, S2, O1, T2, 3,
-                F2, S2, O2, T1, 2,
-                F2, S2, O2, T2, 1);
+        final String expected = getDenselyPopulatedLogString(16);
         assertEquals(expected, spanNameAndCountRecorder.toString());
-        verify(mockClock, times(136)).millis();
+        verify(mockClock, times(countOfAddCalls)).millis();
     }
 
     @Test
-    public void testClear() {
+    public void testClearBecauseOneHourHasPassed() {
         when(mockClock.millis()).thenReturn(ONE_HOUR + 1);
-        spanNameAndCountRecorder.add(F1, S1, O1, T1);
-        final String logged = String.format(FORMAT,
-                F1, S1, O1, T1, 17,
-                F1, S1, O1, T2, 15,
-                F1, S1, O2, T1, 14,
-                F1, S1, O2, T2, 13,
-                F1, S2, O1, T1, 12,
-                F1, S2, O1, T2, 11,
-                F1, S2, O2, T1, 10,
-                F1, S2, O2, T2, 9,
-                F2, S1, O1, T1, 8,
-                F2, S1, O1, T2, 7,
-                F2, S1, O2, T1, 6,
-                F2, S1, O2, T2, 5,
-                F2, S2, O1, T1, 4,
-                F2, S2, O1, T2, 3,
-                F2, S2, O2, T1, 2,
-                F2, S2, O2, T2, 1);
-        final String expected = String.format(FORMAT,
-                F1, S1, O1, T1, 0,
+        add(F1, S1, O1, T1);
+        assertEquals(getSparselyPopulatedLogString(0), spanNameAndCountRecorder.toString());
+        verify(mockClock, times(countOfAddCalls)).millis();
+        verify(mockLogger).info(String.format(CONFIDENTIAL_DATA_LOCATIONS, getDenselyPopulatedLogString(17)));
+    }
+
+    @Test
+    public void testLogIfTimeToLogAddAndGetOneHour() {
+        final long now = System.currentTimeMillis();
+        when(mockClock.millis()).thenReturn(now + ONE_HOUR, now + 1 + (2 * ONE_HOUR));
+        add(F1, S1, O1, T1);
+        verify(mockLogger).info(String.format(CONFIDENTIAL_DATA_LOCATIONS, getDenselyPopulatedLogString(17)));
+        add(F1, S1, O1, T1);
+        verify(mockLogger).info(String.format(CONFIDENTIAL_DATA_LOCATIONS, getSparselyPopulatedLogString(1)));
+        verify(mockClock, times(countOfAddCalls)).millis();
+    }
+
+    private void add(String finderName, String serviceName, String operationName, String tagKey) {
+        spanNameAndCountRecorder.add(finderName, serviceName, operationName, tagKey);
+        ++countOfAddCalls;
+    }
+
+    private static String getSparselyPopulatedLogString(int f1S1O1T1Count) {
+        return String.format(FORMAT,
+                F1, S1, O1, T1, f1S1O1T1Count,
                 F1, S1, O1, T2, 0,
                 F1, S1, O2, T1, 0,
                 F1, S1, O2, T2, 0,
@@ -131,8 +122,25 @@ public class SpanNameAndCountRecorderTest {
                 F2, S2, O1, T2, 0,
                 F2, S2, O2, T1, 0,
                 F2, S2, O2, T2, 0);
-        assertEquals(expected, spanNameAndCountRecorder.toString());
-        verify(mockClock, times(137)).millis();
-        verify(mockLogger).info(String.format(CONFIDENTIAL_DATA_LOCATIONS, logged));
+    }
+
+    private static String getDenselyPopulatedLogString(int f1S1O1T1Count) {
+        return String.format(FORMAT,
+                F1, S1, O1, T1, f1S1O1T1Count,
+                F1, S1, O1, T2, 15,
+                F1, S1, O2, T1, 14,
+                F1, S1, O2, T2, 13,
+                F1, S2, O1, T1, 12,
+                F1, S2, O1, T2, 11,
+                F1, S2, O2, T1, 10,
+                F1, S2, O2, T2, 9,
+                F2, S1, O1, T1, 8,
+                F2, S1, O1, T2, 7,
+                F2, S1, O2, T1, 6,
+                F2, S1, O2, T2, 5,
+                F2, S2, O1, T1, 4,
+                F2, S2, O1, T2, 3,
+                F2, S2, O2, T1, 2,
+                F2, S2, O2, T2, 1);
     }
 }
