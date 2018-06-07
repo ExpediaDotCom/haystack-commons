@@ -14,13 +14,11 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.commons.secretDetector.xml;
+package com.expedia.www.haystack.commons.secretDetector;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import com.expedia.www.haystack.commons.secretDetector.S3ConfigFetcherBase;
-import com.expedia.www.haystack.commons.secretDetector.WhiteListConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +54,7 @@ import static org.mockito.Mockito.when;
 
 @SuppressWarnings("Duplicates")
 @RunWith(MockitoJUnitRunner.class)
-public class XmlS3ConfigFetcherTest {
+public class S3ConfigFetcherTest {
     private static final String BUCKET = RANDOM.nextLong() + "BUCKET";
     private static final String KEY = RANDOM.nextLong() + "KEY";
     private static final long ONE_HOUR = 60L * 60L * 1000L;
@@ -66,13 +64,13 @@ public class XmlS3ConfigFetcherTest {
     private static final String COMMENT = "Comment";
     private static final String ONE_LINE_OF_GOOD_DATA = String.format("%s;%s;%s",
             FINDER_NAME, XML_PATH, COMMENT);
-    private static final XmlWhiteListItem SPAN_WHITE_LIST_ITEM =
-            new XmlWhiteListItem(FINDER_NAME, XML_PATH);
+    private static final WhiteListItem SPAN_WHITE_LIST_ITEM =
+            new WhiteListItem(FINDER_NAME, XML_PATH);
     private static final String SECOND_FINDER_NAME = "SecondFinderName";
     private static final String SECOND_LINE_OF_GOOD_DATA = String.format("%s;%s;%s",
             SECOND_FINDER_NAME, XML_PATH, COMMENT);
-    private static final XmlWhiteListItem SECOND_SPAN_WHITE_LIST_ITEM =
-            new XmlWhiteListItem(SECOND_FINDER_NAME, XML_PATH);
+    private static final WhiteListItem SECOND_SPAN_WHITE_LIST_ITEM =
+            new WhiteListItem(SECOND_FINDER_NAME, XML_PATH);
     private static final String ONE_LINE_OF_BAD_DATA = FINDER_NAME;
     private static final String MISSING_FINDER_NAME = "MissingFinderName";
     private static final String MISSING_XML_PATH = "MissingXmlPath";
@@ -87,7 +85,7 @@ public class XmlS3ConfigFetcherTest {
     private AmazonS3 mockAmazonS3;
 
     @Mock
-    private XmlS3ConfigFetcher.SpanFactory mockFactory;
+    private S3ConfigFetcher.SpanFactory mockFactory;
 
     @Mock
     private S3Object mockS3Object;
@@ -101,16 +99,16 @@ public class XmlS3ConfigFetcherTest {
     @Mock
     private BufferedReader mockBufferedReader;
 
-    private XmlS3ConfigFetcher spanS3ConfigFetcher;
-    private XmlS3ConfigFetcher.SpanFactory factory;
+    private S3ConfigFetcher spanS3ConfigFetcher;
+    private S3ConfigFetcher.SpanFactory factory;
     private int wantedNumberOfInvocationsCreateWhiteList = 1;
 
     @Before
     public void setUp() {
-        factory = new XmlS3ConfigFetcher.SpanFactory();
+        factory = new S3ConfigFetcher.SpanFactory();
         when(mockWhiteListConfig.bucket()).thenReturn(BUCKET);
         when(mockWhiteListConfig.key()).thenReturn(KEY);
-        spanS3ConfigFetcher = new XmlS3ConfigFetcher(
+        spanS3ConfigFetcher = new S3ConfigFetcher(
                 mockS3ConfigFetcherLogger, mockWhiteListConfig, mockAmazonS3, mockFactory);
     }
 
@@ -125,7 +123,7 @@ public class XmlS3ConfigFetcherTest {
 
     @Test
     public void testSmallConstructor() {
-        new XmlS3ConfigFetcher(BUCKET, KEY);
+        new S3ConfigFetcher(BUCKET, KEY);
     }
 
     @Test
@@ -254,10 +252,10 @@ public class XmlS3ConfigFetcherTest {
 
     @Test
     public void testFactoryCreateWhiteListItem() {
-        final XmlWhiteListItem whiteListItem = factory.createWhiteListItem(
+        final WhiteListItem whiteListItem = factory.createWhiteListItem(
                 FINDER_NAME, XML_PATH);
         assertEquals(FINDER_NAME, whiteListItem.getFinderName());
-        assertEquals(XML_PATH, whiteListItem.getXmlPath());
+        assertEquals(XML_PATH, whiteListItem.getPath());
     }
 
     @Test

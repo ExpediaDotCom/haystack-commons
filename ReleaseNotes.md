@@ -1,5 +1,7 @@
 # Release Notes
 
+## 1.0.38 / 2018-06-07 Add secret detection for parsed JSON
+
 ## 1.0.37 / 2018-06-05 No code changes
 Handle last logged time properly at startup
 

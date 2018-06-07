@@ -14,21 +14,19 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.commons.secretDetector.xml;
+package com.expedia.www.haystack.commons.secretDetector;
 
-import com.expedia.www.haystack.commons.secretDetector.WhiteListItemBase;
+class WhiteListItem extends WhiteListItemBase {
 
-class XmlWhiteListItem extends WhiteListItemBase {
-
-    XmlWhiteListItem(String finderName, String xmlPath) {
-        super(finderName, xmlPath);
+    WhiteListItem(String finderName, String path) {
+        super(finderName, path);
     }
 
     String getFinderName() {
         return items[0];
     }
 
-    String getXmlPath() {
+    String getPath() {
         return items[1];
     }
 }
