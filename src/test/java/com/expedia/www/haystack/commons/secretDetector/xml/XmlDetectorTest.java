@@ -16,6 +16,7 @@
  */
 package com.expedia.www.haystack.commons.secretDetector.xml;
 
+import com.expedia.www.haystack.commons.secretDetector.S3ConfigFetcher;
 import com.expedia.www.haystack.metrics.MetricObjects;
 import com.netflix.servo.monitor.Counter;
 import io.dataapps.chlorine.finder.FinderEngine;
@@ -74,18 +75,18 @@ public class XmlDetectorTest {
     private MetricObjects mockMetricObjects;
 
     @Mock
-    private XmlS3ConfigFetcher mockXmlS3ConfigFetcher;
+    private S3ConfigFetcher mockS3ConfigFetcher;
 
     private XmlDetector xmlDetector;
 
     @Before
     public void setUp() {
-        xmlDetector = new XmlDetector(FINDER_ENGINE, mockXmlS3ConfigFetcher);
+        xmlDetector = new XmlDetector(FINDER_ENGINE, mockS3ConfigFetcher);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockLogger, mockCounter, mockMetricObjects, mockXmlS3ConfigFetcher);
+        verifyNoMoreInteractions(mockLogger, mockCounter, mockMetricObjects, mockS3ConfigFetcher);
     }
 
     @Test
@@ -166,7 +167,7 @@ public class XmlDetectorTest {
     }
 
     private void testApplyContainsSecret(Document document, String id, boolean isInWhitelist) {
-        when(mockXmlS3ConfigFetcher.isInWhiteList(anyString(), anyString())).thenReturn(isInWhitelist);
+        when(mockS3ConfigFetcher.isInWhiteList(anyString(), anyString())).thenReturn(isInWhitelist);
         final Iterable<String> iterable = xmlDetector.apply(document);
         if(isInWhitelist) {
             assertFalse(iterable.iterator().hasNext());
@@ -176,7 +177,7 @@ public class XmlDetectorTest {
                     '{' + EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML + "=[" + id + "]}";
             assertEquals(String.format(TEXT_TEMPLATE, finderNameAndIdWrappedInArrayAndMapSyntax), next);
         }
-        verify(mockXmlS3ConfigFetcher).isInWhiteList("Email", id);
+        verify(mockS3ConfigFetcher).isInWhiteList("Email", id);
     }
 */
     private void testFindSecretsContainsSecret(Document document, String expected) {

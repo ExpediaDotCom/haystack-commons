@@ -14,8 +14,10 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.commons.config;
+package com.expedia.www.haystack.commons.secretDetector;
 
+import com.expedia.www.haystack.commons.config.Configuration;
+import com.expedia.www.haystack.commons.config.WhiteListConfigurationProvider;
 import org.cfg4j.provider.ConfigurationProvider;
 import org.junit.Before;
 import org.junit.Test;

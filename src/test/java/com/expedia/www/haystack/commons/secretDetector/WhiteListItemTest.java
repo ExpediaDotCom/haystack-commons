@@ -14,7 +14,7 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.commons.secretDetector.xml;
+package com.expedia.www.haystack.commons.secretDetector;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -24,57 +24,57 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 
-public class XmlWhiteListItemTest {
+public class WhiteListItemTest {
     private static final String FINDER_NAME = RANDOM.nextLong() + "FINDER_NAME";
     private static final String SERVICE_NAME = RANDOM.nextLong() + "SERVICE_NAME";
-    private XmlWhiteListItem xmlWhiteListItem;
+    private WhiteListItem whiteListItem;
 
     @Before
     public void setUp() {
-        xmlWhiteListItem = new XmlWhiteListItem(FINDER_NAME, SERVICE_NAME);
+        whiteListItem = new WhiteListItem(FINDER_NAME, SERVICE_NAME);
     }
 
     @Test
     public void testEqualsAndHashcodeNullOther() {
         //noinspection SimplifiableJUnitAssertion,SimplifiableJUnitAssertion,ConstantConditions,ObjectEqualsNull
-        assertFalse(xmlWhiteListItem.equals(null));
+        assertFalse(whiteListItem.equals(null));
     }
 
     @Test
     public void testEqualsSameOther() {
-        assertEquals(xmlWhiteListItem, xmlWhiteListItem);
+        assertEquals(whiteListItem, whiteListItem);
     }
 
     @Test
     public void testEqualsDifferentClassOther() {
         //noinspection SimplifiableJUnitAssertion,EqualsBetweenInconvertibleTypes
-        assertFalse(xmlWhiteListItem.equals(FINDER_NAME));
+        assertFalse(whiteListItem.equals(FINDER_NAME));
     }
 
     @Test
     public void testEqualsAndHashcodeTotalMatch() {
-        final XmlWhiteListItem other = new XmlWhiteListItem(FINDER_NAME, SERVICE_NAME);
-        assertEquals(this.xmlWhiteListItem, other);
-        assertEquals(this.xmlWhiteListItem.hashCode(), other.hashCode());
+        final WhiteListItem other = new WhiteListItem(FINDER_NAME, SERVICE_NAME);
+        assertEquals(this.whiteListItem, other);
+        assertEquals(this.whiteListItem.hashCode(), other.hashCode());
     }
 
     @Test
     public void testEqualsAndHashcodeFinderNameMismatch() {
         testEqualsAndHashcodeMismatch(
-                new XmlWhiteListItem("1", "2"),
-                new XmlWhiteListItem("3", "2"));
+                new WhiteListItem("1", "2"),
+                new WhiteListItem("3", "2"));
     }
 
     @Test
     public void testEqualsAndHashcodeXmlPathMismatch() {
         testEqualsAndHashcodeMismatch(
-                new XmlWhiteListItem("1", "2"),
-                new XmlWhiteListItem("1", "4"));
+                new WhiteListItem("1", "2"),
+                new WhiteListItem("1", "4"));
     }
 
-    private static void testEqualsAndHashcodeMismatch(XmlWhiteListItem xmlWhiteListItem1,
-                                                      XmlWhiteListItem xmlWhiteListItem2) {
-        assertNotEquals(xmlWhiteListItem1, xmlWhiteListItem2);
-        assertNotEquals(xmlWhiteListItem1.hashCode(), xmlWhiteListItem2.hashCode());
+    private static void testEqualsAndHashcodeMismatch(WhiteListItem whiteListItem1,
+                                                      WhiteListItem whiteListItem2) {
+        assertNotEquals(whiteListItem1, whiteListItem2);
+        assertNotEquals(whiteListItem1.hashCode(), whiteListItem2.hashCode());
     }
 }
