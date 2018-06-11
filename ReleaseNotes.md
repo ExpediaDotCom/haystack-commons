@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.0.39 / 2018-06-07 Make JSON detector except JsonElement instead of JsonObject
+The root JSON structure might be a JsonArray instead of a JsonObject, so the code now excepts a JsonElement (the base
+class of both JsonArray and JsonObject)
+
 ## 1.0.38 / 2018-06-07 Add secret detection for parsed JSON
 
 ## 1.0.37 / 2018-06-05 No code changes

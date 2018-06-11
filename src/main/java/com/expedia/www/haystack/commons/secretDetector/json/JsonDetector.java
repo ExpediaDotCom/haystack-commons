@@ -28,11 +28,11 @@ public class JsonDetector extends DetectorBase {
     /**
      * Finds secrets in an XML Document
      *
-     * @param jsonObject the JSON object in which to look for secrets
+     * @param jsonElement the JSON object in which to look for secrets
      * @return keys of the secrets (the names of the attributes or elements whose values are secrets)
      */
-    public Map<String, List<String>> findSecrets(JsonObject jsonObject) {
-        return findSecrets(jsonObject, new HashMap<>(), new LinkedList<>());
+    public Map<String, List<String>> findSecrets(JsonElement jsonElement) {
+        return findSecrets(jsonElement, new HashMap<>(), new LinkedList<>());
     }
 
     private Map<String, List<String>> findSecrets(JsonElement rootJsonElement,
