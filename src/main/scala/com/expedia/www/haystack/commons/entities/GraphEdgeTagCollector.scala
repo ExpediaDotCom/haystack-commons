@@ -29,13 +29,20 @@ import scala.collection.mutable
 class GraphEdgeTagCollector(tags: Set[String]) {
 
   /**
+    * Default tags that will always be collected.
+    */
+  private val defaultTags: Set[String] = Set(TagKeys.ERROR_KEY)
+
+  private val filteredTags = defaultTags ++ tags
+
+  /**
     *
     * @param span: Span containing all the tags
     * @return Filtered list of tag keys and values that match the defined tag names.
     */
   def collectTags(span: Span): Map[String, String] = {
     val edgeTags =  mutable.Map[String, String]()
-    span.getTagsList.asScala.filter(t => tags.contains(t.getKey)).foreach { tag =>
+    span.getTagsList.asScala.filter(t => filteredTags.contains(t.getKey)).foreach { tag =>
       edgeTags += (tag.getKey -> tag.getVStr)
     }
     edgeTags.toMap
