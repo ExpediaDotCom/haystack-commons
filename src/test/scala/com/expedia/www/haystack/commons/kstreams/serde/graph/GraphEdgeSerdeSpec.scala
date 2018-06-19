@@ -30,8 +30,8 @@ class GraphEdgeSerdeSpec extends UnitTestSpec {
       val serializer = (new GraphEdgeSerde).serializer()
 
       And("a valid GraphEdge is provided")
-      val edge = GraphEdge("sourceSvc", "destinationSvc", "operation", Map("infraprovider" -> "aws", "tier" -> "1")
-        .asJava)
+      val edge = GraphEdge("sourceSvc", "destinationSvc", "operation", Map("X-HAYSTACK-INFRASTRUCTURE-PROVIDER" -> "aws",
+        "tier" -> "1").asJava)
 
       When("GraphEdge serializer is used to serialize the GraphEdge")
       val bytes = serializer.serialize("graph-nodes", edge)
@@ -48,8 +48,8 @@ class GraphEdgeSerdeSpec extends UnitTestSpec {
       val deserializer = (new GraphEdgeSerde).deserializer()
 
       And("a valid GraphEdge is provided")
-      val edge = GraphEdge("sourceSvc", "destinationSvc", "operation", Map(TagKeys.INFRASTRUCTURE_PROVIDER -> "aws",
-        TagKeys.TIER -> "1").asJava)
+      val edge = GraphEdge("sourceSvc", "destinationSvc", "operation", Map("X-HAYSTACK-INFRASTRUCTURE-PROVIDER" -> "aws",
+        "tier" -> "1").asJava)
 
       When("GraphEdge deserializer is used on valid array of bytes")
       val bytes = serializer.serialize("graph-nodes", edge)

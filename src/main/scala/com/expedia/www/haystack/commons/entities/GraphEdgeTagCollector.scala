@@ -17,19 +17,29 @@
  */
 package com.expedia.www.haystack.commons.entities
 
-import java.util
+import com.expedia.open.tracing.Span
+
+import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 
 /**
-  * Case class with enough information to build a relationship between two service graph nodes
-  *
-  * @param source      identifier for the source graph node
-  * @param destination identifier for the destination graph node
-  * @param operation   identifier for the graph edge
-  * @param tags contains list of tags that can be associated with a edge. Tag would provide additional information
-  *             regarding a edge. (Example: service tier indicating the importance of the service)
+  * Define tag names that should be collected when building a GraphEdge.
   */
-case class GraphEdge(source: String, destination: String, operation: String, tags: util.Map[String, String]
-= new util.HashMap[String, String]()) {
+class GraphEdgeTagCollector(tags: Set[String]) {
+
+  /**
+    *
+    * @param span: Span containing all the tags
+    * @return Filtered list of tag keys and values that match the defined tag names.
+    */
+  def collectTags(span: Span): Map[String, String] = {
+    val edgeTags =  mutable.Map[String, String]()
+    span.getTagsList.asScala.filter(t => tags.contains(t.getKey)).foreach { tag =>
+      edgeTags += (tag.getKey -> tag.getVStr)
+    }
+    edgeTags.toMap
+  }
 }
+
 

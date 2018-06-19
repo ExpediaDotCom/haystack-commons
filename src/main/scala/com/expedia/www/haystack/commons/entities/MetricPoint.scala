@@ -62,6 +62,4 @@ object TagKeys {
   val STATS_KEY = "stat"
   val ERROR_KEY = "error"
   val INTERVAL_KEY = "interval"
-  val INFRASTRUCTURE_PROVIDER = "X-HAYSTACK-INFRASTRUCTURE-PROVIDER"
-  val TIER = "tier"
 }
