@@ -14,14 +14,11 @@
  *       limitations under the License.
  *
  */
-package com.expedia.www.haystack.commons.secretDetector.xml;
+package com.expedia.www.haystack.commons.secretDetector;
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.expedia.www.haystack.commons.secretDetector.S3ConfigFetcherBase;
-import com.expedia.www.haystack.commons.secretDetector.WhiteListConfig;
-import com.expedia.www.haystack.commons.secretDetector.WhiteListItemBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,18 +27,18 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings("WeakerAccess")
-public class XmlS3ConfigFetcher extends S3ConfigFetcherBase {
+public class S3ConfigFetcher extends S3ConfigFetcherBase {
     private static final int ITEM_COUNT = 2;
 
-    public XmlS3ConfigFetcher(String bucket, String key) {
-        super(LoggerFactory.getLogger(XmlS3ConfigFetcher.class), bucket, key,
+    public S3ConfigFetcher(String bucket, String key) {
+        super(LoggerFactory.getLogger(S3ConfigFetcher.class), bucket, key,
                 AmazonS3ClientBuilder.standard().withRegion(Regions.US_WEST_2).build(), new SpanFactory(), ITEM_COUNT);
     }
 
-    public XmlS3ConfigFetcher(Logger s3ConfigFetcherLogger,
-                              WhiteListConfig whiteListConfig,
-                              AmazonS3 amazonS3,
-                              SpanFactory s3ConfigFetcherFactory) {
+    public S3ConfigFetcher(Logger s3ConfigFetcherLogger,
+                           WhiteListConfig whiteListConfig,
+                           AmazonS3 amazonS3,
+                           SpanFactory s3ConfigFetcherFactory) {
         super(s3ConfigFetcherLogger, whiteListConfig.bucket(), whiteListConfig.key(), amazonS3, s3ConfigFetcherFactory,
                 ITEM_COUNT);
     }
@@ -59,17 +56,17 @@ public class XmlS3ConfigFetcher extends S3ConfigFetcherBase {
     @SuppressWarnings("unchecked")
     @Override
     protected void putItemInWhiteList(Object whiteList, WhiteListItemBase whiteListItem) {
-        final XmlWhiteListItem xmlWhiteListItem = (XmlWhiteListItem) whiteListItem;
+        final WhiteListItem xmlWhiteListItem = (WhiteListItem) whiteListItem;
         final Map<String, Set<String>> whiteListCastAsMap = (Map<String, Set<String>>) whiteList;
         final Set<String> xmlPaths = whiteListCastAsMap.computeIfAbsent(
                 xmlWhiteListItem.getFinderName(), v -> ConcurrentHashMap.newKeySet());
-        xmlPaths.add(xmlWhiteListItem.getXmlPath());
+        xmlPaths.add(xmlWhiteListItem.getPath());
     }
 
-    public static class SpanFactory extends Factory<XmlWhiteListItem> {
+    public static class SpanFactory extends Factory<WhiteListItem> {
         @Override
-        public XmlWhiteListItem createWhiteListItem(String... items) {
-            return new XmlWhiteListItem(items[0], items[1]);
+        public WhiteListItem createWhiteListItem(String... items) {
+            return new WhiteListItem(items[0], items[1]);
         }
 
         @Override

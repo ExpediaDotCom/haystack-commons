@@ -17,7 +17,7 @@
 package com.expedia.www.haystack.commons.secretDetector.xml;
 
 import com.expedia.www.haystack.commons.secretDetector.DetectorBase;
-import com.google.common.annotations.VisibleForTesting;
+import com.expedia.www.haystack.commons.secretDetector.S3ConfigFetcher;
 import io.dataapps.chlorine.finder.FinderEngine;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -35,16 +35,14 @@ import java.util.Map;
  */
 @SuppressWarnings("WeakerAccess")
 public class XmlDetector extends DetectorBase {
-    @VisibleForTesting
-    static final String TEXT_TEMPLATE = "Confidential data has been found in an XML BLOB: %s";
     private static final String[] ZERO_LENGTH_STRING_ARRAY = new String[0];
 
     public XmlDetector(String bucket) {
-        this(new FinderEngine(), new XmlS3ConfigFetcher(bucket, "secret-detector/blobWhiteListItems.txt"));
+        this(new FinderEngine(), new S3ConfigFetcher(bucket, "secret-detector/xmlWhiteListItems.txt"));
     }
 
-    public XmlDetector(FinderEngine finderEngine, XmlS3ConfigFetcher xmlS3ConfigFetcher) {
-        super(finderEngine, xmlS3ConfigFetcher);
+    public XmlDetector(FinderEngine finderEngine, S3ConfigFetcher s3ConfigFetcher) {
+        super(finderEngine, s3ConfigFetcher);
     }
 
     /**

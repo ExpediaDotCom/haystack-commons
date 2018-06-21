@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
 
 import java.util.List;
 
@@ -59,6 +60,9 @@ public class SpanSecretMaskerTest {
             new FinderNameAndServiceName(IP_FINDER_NAME, SERVICE_NAME);
 
     @Mock
+    private Logger mockLogger;
+
+    @Mock
     private Factory mockFactory;
 
     @Mock
@@ -70,19 +74,24 @@ public class SpanSecretMaskerTest {
     @Mock
     private MetricObjects mockMetricObjects;
 
+    @Mock
+    private SpanNameAndCountRecorder mockSpanNameAndCountRecorder;
+
     private SpanSecretMasker spanSecretMasker;
     private Factory factory;
 
     @Before
     public void setUp() {
-        spanSecretMasker = new SpanSecretMasker(FINDER_ENGINE, mockFactory, mockSpanS3ConfigFetcher, APPLICATION);
+        spanSecretMasker = new SpanSecretMasker(
+                FINDER_ENGINE, mockFactory, mockSpanS3ConfigFetcher, mockSpanNameAndCountRecorder, APPLICATION);
         factory = new Factory(mockMetricObjects);
     }
 
     @After
     public void tearDown() {
         SpanSecretMasker.COUNTERS.clear();
-        verifyNoMoreInteractions(mockFactory, mockSpanS3ConfigFetcher, mockCounter, mockMetricObjects);
+        verifyNoMoreInteractions(mockLogger, mockFactory, mockSpanS3ConfigFetcher, mockCounter, mockMetricObjects,
+                mockSpanNameAndCountRecorder);
     }
 
     @Test
@@ -109,6 +118,8 @@ public class SpanSecretMaskerTest {
                 EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML, SERVICE_NAME, OPERATION_NAME, STRING_TAG_KEY);
         verify(mockFactory).createCounter(EMAIL_FINDER_NAME_AND_SERVICE_NAME, APPLICATION);
         verify(mockCounter).increment();
+        verify(mockSpanNameAndCountRecorder).add(
+                EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML, SERVICE_NAME, OPERATION_NAME, STRING_TAG_KEY);
     }
 
     @Test
@@ -142,6 +153,12 @@ public class SpanSecretMaskerTest {
         verify(mockFactory).createCounter(EMAIL_FINDER_NAME_AND_SERVICE_NAME, APPLICATION);
         verify(mockFactory).createCounter(IPV4_FINDER_NAME_AND_SERVICE_NAME, APPLICATION);
         verify(mockCounter, times(3)).increment();
+        verify(mockSpanNameAndCountRecorder).add(
+                EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML, SERVICE_NAME, OPERATION_NAME, BYTES_TAG_KEY);
+        verify(mockSpanNameAndCountRecorder).add(
+                EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML, SERVICE_NAME, OPERATION_NAME, BYTES_FIELD_KEY);
+        verify(mockSpanNameAndCountRecorder).add(
+                IP_FINDER_NAME, SERVICE_NAME, OPERATION_NAME, STRING_TAG_KEY);
     }
 
     @SuppressWarnings("MethodWithMultipleLoops")
@@ -160,6 +177,10 @@ public class SpanSecretMaskerTest {
                 EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML, SERVICE_NAME, OPERATION_NAME, BYTES_FIELD_KEY);
         verify(mockFactory).createCounter(EMAIL_FINDER_NAME_AND_SERVICE_NAME, APPLICATION);
         verify(mockCounter, times(2)).increment();
+        verify(mockSpanNameAndCountRecorder).add(
+                EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML, SERVICE_NAME, OPERATION_NAME, BYTES_TAG_KEY);
+        verify(mockSpanNameAndCountRecorder).add(
+                EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML, SERVICE_NAME, OPERATION_NAME, BYTES_FIELD_KEY);
     }
 
     @SuppressWarnings("MethodWithMultipleLoops")
@@ -175,6 +196,8 @@ public class SpanSecretMaskerTest {
                 EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML, SERVICE_NAME, OPERATION_NAME, STRING_FIELD_KEY);
         verify(mockFactory).createCounter(EMAIL_FINDER_NAME_AND_SERVICE_NAME, APPLICATION);
         verify(mockCounter).increment();
+        verify(mockSpanNameAndCountRecorder).add(
+                EMAIL_FINDER_NAME_IN_FINDERS_DEFAULT_DOT_XML, SERVICE_NAME, OPERATION_NAME, STRING_FIELD_KEY);
     }
 
     private static Tag findTag(Span span, String key) {

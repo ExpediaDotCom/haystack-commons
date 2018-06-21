@@ -1,5 +1,33 @@
 # Release Notes
 
+## 1.0.39 / 2018-06-07 Make JSON detector except JsonElement instead of JsonObject
+The root JSON structure might be a JsonArray instead of a JsonObject, so the code now excepts a JsonElement (the base
+class of both JsonArray and JsonObject)
+
+## 1.0.38 / 2018-06-07 Add secret detection for parsed JSON
+
+## 1.0.37 / 2018-06-05 No code changes
+Handle last logged time properly at startup
+
+## 1.0.36 / 2018-06-04 No code changes
+Had to tag again
+
+## 1.0.35 / 2018-06-04 Make SpanNameAndCountRecorder constructor public
+Also fixed a typo in a variable name.
+
+## 1.0.34 / 2018-06-04 Add SpanNameAndCountRecorder
+Finish implementing secret ID logging for spans.
+
+## 1.0.33 / 2018-05-31 Add SpanNameAndCountRecorder
+There are no plans to release this code until the secret ID logging is in place.
+
+## 1.0.32 / 2018-05-30 Refactoring in preparation for secret ID logging
+There are no plans to release this code until the secret ID logging is in place.
+
+## 1.0.31 / 2018-05-24 Look for GB and FR phone numbers
+If this scales, additional Western European regions will be added.
+Also made the IP v4 checker regular expression more correct.
+
 ## 1.0.30 / 2018-05-24 1.0.28 missed a use of Maven StringUtils.isNotEmpty(); fixed this
 The 1.0.28 tag was not applied to the correct code, so building 1.0.29.
 

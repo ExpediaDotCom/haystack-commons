@@ -22,19 +22,24 @@ import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import io.dataapps.chlorine.finder.Finder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.expedia.www.haystack.commons.secretDetector.CldrRegions.FRANCE;
+import static com.expedia.www.haystack.commons.secretDetector.CldrRegions.UNITED_KINGDOM;
+import static com.expedia.www.haystack.commons.secretDetector.CldrRegions.UNITED_STATES;
+
 @SuppressWarnings("WeakerAccess")
 public class HaystackPhoneNumberFinder implements Finder {
     private static final String FINDER_NAME = "PhoneNumber";
-    private static final String REGION = "US";
     private static final Pattern ALPHAS_PATTERN = Pattern.compile("[A-Za-z]+");
     private static final Pattern ALL_NUMBERS_PATTERN = Pattern.compile("^\\d+$");
     private final PhoneNumberUtil phoneNumberUtil;
+    private final List<String> regions = new ArrayList<>();
 
     public HaystackPhoneNumberFinder() {
         this(PhoneNumberUtil.getInstance());
@@ -42,6 +47,7 @@ public class HaystackPhoneNumberFinder implements Finder {
 
     public HaystackPhoneNumberFinder(PhoneNumberUtil phoneNumberUtil) {
         this.phoneNumberUtil = phoneNumberUtil;
+        regions.addAll(Arrays.asList(UNITED_STATES, FRANCE, UNITED_KINGDOM));
     }
 
     @SuppressWarnings("SuspiciousGetterSetter")
@@ -59,13 +65,20 @@ public class HaystackPhoneNumberFinder implements Finder {
         return list;
     }
 
+    @SuppressWarnings("OverlyNestedMethod") // the nesting makes debugging easier
     @Override
     public List<String> find(String input) {
         try {
-            if (!containsAnyAlphabeticCharacters(input) && isNotIpV4Address(input) && !containsOnlyNumbers(input)) {
-                final PhoneNumber phoneNumber = phoneNumberUtil.parseAndKeepRawInput(input, REGION);
-                if (phoneNumberUtil.isValidNumberForRegion(phoneNumber, REGION)) {
-                    return Collections.singletonList(phoneNumber.getRawInput());
+            if (!containsAnyAlphabeticCharacters(input)) {
+                if(isNotIpV4Address(input)) {
+                    if(!containsOnlyNumbers(input)) {
+                        for (final String region : regions) {
+                            final PhoneNumber phoneNumber = phoneNumberUtil.parseAndKeepRawInput(input, region);
+                            if (phoneNumberUtil.isValidNumberForRegion(phoneNumber, region)) {
+                                return Collections.singletonList(phoneNumber.getRawInput());
+                            }
+                        }
+                    }
                 }
             }
         } catch (NumberParseException e) {
