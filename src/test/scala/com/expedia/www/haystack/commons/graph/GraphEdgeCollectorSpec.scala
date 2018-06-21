@@ -47,7 +47,8 @@ class GraphEdgeCollectorSpec extends UnitTestSpec {
       Given("a graph edge collector and an empty tag list")
       val tags = Set[String]()
       And("a span containing only the default tag")
-      val span = Span.newBuilder().addTags(Tag.newBuilder().setKey(TagKeys.ERROR_KEY).setVBool(true).setType(TagType.BOOL)).build()
+      val span = Span.newBuilder().addTags(Tag.newBuilder().setKey(TagKeys.ERROR_KEY).setVBool(true)
+                  .setType(TagType.BOOL)).build()
 
       When("collecting the tags for a given span")
       val edgeTagCollector = new GraphEdgeTagCollector(tags)
@@ -57,11 +58,11 @@ class GraphEdgeCollectorSpec extends UnitTestSpec {
       collectedTags.get(TagKeys.ERROR_KEY) should be (Some("true"))
     }
 
-    "should throw an exception if tag type cannot be determined" in {
+    "should throw an exception if tag type cannot be converted to string" in {
       Given("a graph edge collector and an empty tag list")
       val tags = Set("test")
-      And("a span containing a tag whose type cannot be determined")
-      val span = Span.newBuilder().addTags(Tag.newBuilder().setKey("test").setVBool(true)).build()
+      And("a span containing a tag whose type is not supported")
+      val span = Span.newBuilder().addTags(Tag.newBuilder().setKey("test").setType(TagType.BINARY)).build()
 
       When("collecting the tags for a given span")
       Then("only the predefined tags that are also part of the span should be collected")
