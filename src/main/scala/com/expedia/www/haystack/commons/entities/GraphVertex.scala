@@ -19,11 +19,10 @@ package com.expedia.www.haystack.commons.entities
 
 
 /**
-  * Case class with enough information to build a relationship between two service graph nodes
-  * @param source identifier for the source graph node
-  * @param destination identifier for the destination graph node
-  * @param operation identifier for the graph edge
+  * Vertex of a graph that includes the name of the vertex and tags associated with the vertex
+  * @param name: Name of the service vertex
+  * @param tags: List of tag names associated with the service vertex
   */
-case class GraphEdge(source: GraphVertex, destination: GraphVertex, operation: String) {
+case class GraphVertex(name: String, tags: java.util.Map[String, String] = new java.util.HashMap[String, String]()) {
 }
 

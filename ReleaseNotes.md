@@ -1,5 +1,8 @@
 # Release Notes
 
+## 1.0.40 / 2018-06-21 Add tag information to source and destination of a graph edge. This would ensure that we can 
+pass additional information to the service graph.
+
 ## 1.0.39 / 2018-06-07 Make JSON detector except JsonElement instead of JsonObject
 The root JSON structure might be a JsonArray instead of a JsonObject, so the code now excepts a JsonElement (the base
 class of both JsonArray and JsonObject)
