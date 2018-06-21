@@ -18,7 +18,7 @@
 
 package com.expedia.www.haystack.commons.kstreams.serde.graph
 
-import com.expedia.www.haystack.commons.entities.{GraphEdge, TagKeys}
+import com.expedia.www.haystack.commons.entities.{GraphEdge, GraphVertex}
 import com.expedia.www.haystack.commons.unit.UnitTestSpec
 
 import scala.collection.JavaConverters._
@@ -30,8 +30,8 @@ class GraphEdgeSerdeSpec extends UnitTestSpec {
       val serializer = (new GraphEdgeSerde).serializer()
 
       And("a valid GraphEdge is provided")
-      val edge = GraphEdge("sourceSvc", "destinationSvc", "operation", Map("X-HAYSTACK-INFRASTRUCTURE-PROVIDER" -> "aws",
-        "tier" -> "1").asJava)
+      val edge = GraphEdge(GraphVertex("sourceSvc"), GraphVertex("destinationSvc"),
+        "operation")
 
       When("GraphEdge serializer is used to serialize the GraphEdge")
       val bytes = serializer.serialize("graph-nodes", edge)
@@ -48,8 +48,8 @@ class GraphEdgeSerdeSpec extends UnitTestSpec {
       val deserializer = (new GraphEdgeSerde).deserializer()
 
       And("a valid GraphEdge is provided")
-      val edge = GraphEdge("sourceSvc", "destinationSvc", "operation", Map("X-HAYSTACK-INFRASTRUCTURE-PROVIDER" -> "aws",
-        "tier" -> "1").asJava)
+      val edge = GraphEdge(GraphVertex("sourceSvc", Map("testtag" -> "true").asJava), GraphVertex("destinationSvc"),
+        "operation")
 
       When("GraphEdge deserializer is used on valid array of bytes")
       val bytes = serializer.serialize("graph-nodes", edge)
@@ -57,6 +57,8 @@ class GraphEdgeSerdeSpec extends UnitTestSpec {
 
       Then("it should deserialize correctly")
       edge should be(serializedEdge)
+      edge.source.name should be("sourceSvc")
+      edge.source.tags.get("testtag") should be ("true")
     }
   }
 }

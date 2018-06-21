@@ -18,6 +18,7 @@
 package com.expedia.www.haystack.commons.entities
 
 import com.expedia.open.tracing.Span
+import com.expedia.open.tracing.Tag.TagType
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -26,7 +27,7 @@ import scala.collection.mutable
 /**
   * Define tag names that should be collected when building a GraphEdge.
   */
-class GraphEdgeTagCollector(tags: Set[String]) {
+class GraphEdgeTagCollector(tags: Set[String] = Set()) {
 
   /**
     * Default tags that will always be collected.
@@ -43,7 +44,13 @@ class GraphEdgeTagCollector(tags: Set[String]) {
   def collectTags(span: Span): Map[String, String] = {
     val edgeTags =  mutable.Map[String, String]()
     span.getTagsList.asScala.filter(t => filteredTags.contains(t.getKey)).foreach { tag =>
-      edgeTags += (tag.getKey -> tag.getVStr)
+      tag.getType match {
+        case TagType.STRING => edgeTags += (tag.getKey -> tag.getVStr)
+        case TagType.BOOL => edgeTags += (tag.getKey -> tag.getVBool.toString)
+        case TagType.DOUBLE =>   edgeTags += (tag.getKey -> tag.getVDouble.toString)
+        case TagType.LONG =>   edgeTags += (tag.getKey -> tag.getVLong.toString)
+        case _ =>   throw new IllegalArgumentException("Invalid tag type detected.")
+      }
     }
     edgeTags.toMap
   }

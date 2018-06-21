@@ -17,8 +17,6 @@
  */
 package com.expedia.www.haystack.commons.entities
 
-import java.util
-
 
 /**
   * Case class with enough information to build a relationship between two service graph nodes
@@ -26,10 +24,7 @@ import java.util
   * @param source      identifier for the source graph node
   * @param destination identifier for the destination graph node
   * @param operation   identifier for the graph edge
-  * @param tags contains list of tags that can be associated with a edge. Tag would provide additional information
-  *             regarding a edge. (Example: service tier indicating the importance of the service)
   */
-case class GraphEdge(source: String, destination: String, operation: String, tags: util.Map[String, String]
-= new util.HashMap[String, String]()) {
+case class GraphEdge(source: GraphVertex, destination: GraphVertex, operation: String) {
 }
 
