@@ -20,10 +20,9 @@ package com.expedia.www.haystack.commons.entities
 
 /**
   * Case class with enough information to build a relationship between two service graph nodes
-  *
-  * @param source      identifier for the source graph node
+  * @param source identifier for the source graph node
   * @param destination identifier for the destination graph node
-  * @param operation   identifier for the graph edge
+  * @param operation identifier for the graph edge
   */
 case class GraphEdge(source: GraphVertex, destination: GraphVertex, operation: String) {
 }

@@ -23,7 +23,6 @@ import com.expedia.open.tracing.Tag.TagType
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
-
 /**
   * Define tag names that should be collected when building a GraphEdge.
   */
@@ -37,9 +36,8 @@ class GraphEdgeTagCollector(tags: Set[String] = Set()) {
   private val filteredTags = defaultTags ++ tags
 
   /**
-    *
     * @param span: Span containing all the tags
-    * @return Filtered list of tag keys and values that match the defined tag names.
+    * @return Filtered list of tag keys and values in the span that match the pre defined tag names.
     */
   def collectTags(span: Span): Map[String, String] = {
     val edgeTags =  mutable.Map[String, String]()
