@@ -15,16 +15,18 @@
  *      limitations under the License.
  *
  */
-package com.expedia.www.haystack.commons.entities
+package com.expedia.www.haystack.commons.graph
 
 import com.expedia.open.tracing.Span
 import com.expedia.open.tracing.Tag.TagType
+import com.expedia.www.haystack.commons.entities.TagKeys
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 /**
   * Define tag names that should be collected when building a GraphEdge.
+  * @param tags: Set of tag names to be collected for building the graph edge
   */
 class GraphEdgeTagCollector(tags: Set[String] = Set()) {
 
