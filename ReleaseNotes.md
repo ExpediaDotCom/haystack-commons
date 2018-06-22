@@ -1,5 +1,7 @@
 # Release Notes
 
+## 1.0.41 / 2018-06-22 Change haystack-metrics version to 2.0.1
+
 ## 1.0.40 / 2018-06-21 Add tag information to source and destination of a graph edge. This would ensure that we can 
 pass additional information to the service graph.
 
