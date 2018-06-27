@@ -1,4 +1,6 @@
 # Release Notes
+## 1.0.42 / 2018-06-22 Taking latest IDL version
+New IDL changes include expression tree based searching in reader.
 
 ## 1.0.41 / 2018-06-22 Change haystack-metrics version to 2.0.1
 
