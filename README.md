@@ -41,4 +41,6 @@ mvn clean package
 
 ```git tag -a v1.4 -m "my version 1.4"```
 
+Or you can also tag using UI: https://github.com/ExpediaDotCom/haystack-commons/releases
+
 * Update https://github.com/ExpediaDotCom/haystack-commons/blob/master/ReleaseNotes.md

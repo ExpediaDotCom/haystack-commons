@@ -1,4 +1,8 @@
 # Release Notes
+
+## 1.0.43 / 2018-07-02 Taking latest IDL version
+New IDL changes include expression tree based searching for timeline.
+
 ## 1.0.42 / 2018-06-22 Taking latest IDL version
 New IDL changes include expression tree based searching in reader.
 
