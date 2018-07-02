@@ -24,3 +24,23 @@ For a full build including unit tests, one can run -
 ```
 mvn clean package
 ```
+
+#### Updating haystack-idl
+
+* Run:
+
+```git submodule update --recursive --remote```
+
+* Update maven version
+
+* Raise a PR
+
+#### Releasing haystack-commons
+
+* Git tagging: 
+
+```git tag -a v1.4 -m "my version 1.4"```
+
+Or you can also tag using UI: https://github.com/ExpediaDotCom/haystack-commons/releases
+
+* Update https://github.com/ExpediaDotCom/haystack-commons/blob/master/ReleaseNotes.md
