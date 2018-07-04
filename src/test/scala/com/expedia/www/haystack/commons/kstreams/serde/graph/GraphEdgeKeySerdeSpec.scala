@@ -23,11 +23,11 @@ import com.expedia.www.haystack.commons.unit.UnitTestSpec
 
 import scala.collection.JavaConverters._
 
-class GraphEdgeSerdeSpec extends UnitTestSpec {
-  "GraphEdge serializer" should {
+class GraphEdgeKeySerdeSpec extends UnitTestSpec {
+  "GraphEdge Key serializer" should {
     "should serialize a GraphEdge" in {
       Given("a GraphEdge serializer")
-      val serializer = (new GraphEdgeSerde).serializer()
+      val serializer = (new GraphEdgeKeySerde).serializer()
 
       And("a valid GraphEdge is provided")
       val edge = GraphEdge(GraphVertex("sourceSvc"), GraphVertex("destinationSvc"),
@@ -37,18 +37,18 @@ class GraphEdgeSerdeSpec extends UnitTestSpec {
       val bytes = serializer.serialize("graph-nodes", edge)
 
       Then("it should serialize the object")
-      bytes.nonEmpty should be(true)
+      new String(bytes) shouldEqual "{\"source\":{\"name\":\"sourceSvc\",\"tags\":{}},\"destination\":{\"name\":\"destinationSvc\",\"tags\":{}},\"operation\":\"operation\"}"
     }
   }
 
-  "GraphEdge deserializer" should {
+  "GraphEdge Key deserializer" should {
     "should deserialize a GraphEdge" in {
       Given("a GraphEdge deserializer")
-      val serializer = (new GraphEdgeSerde).serializer()
-      val deserializer = (new GraphEdgeSerde).deserializer()
+      val serializer = (new GraphEdgeKeySerde).serializer()
+      val deserializer = (new GraphEdgeKeySerde).deserializer()
 
       And("a valid GraphEdge is provided")
-      val edge = GraphEdge(GraphVertex("sourceSvc", Map("testtag" -> "true").asJava), GraphVertex("destinationSvc"),
+      val edge = GraphEdge(GraphVertex("sourceSvc"), GraphVertex("destinationSvc"),
         "operation")
 
       When("GraphEdge deserializer is used on valid array of bytes")
@@ -56,9 +56,11 @@ class GraphEdgeSerdeSpec extends UnitTestSpec {
       val serializedEdge = deserializer.deserialize("graph-nodes", bytes)
 
       Then("it should deserialize correctly")
-      edge should be(serializedEdge)
-      edge.source.name should be("sourceSvc")
-      edge.source.tags.get("testtag") should be ("true")
+      serializedEdge.source.name should be("sourceSvc")
+      serializedEdge.destination.name should be("destinationSvc")
+      serializedEdge.operation shouldEqual("operation")
+      serializedEdge.source.tags.size() shouldBe 0
+      serializedEdge.destination.tags.size() shouldBe 0
     }
   }
 }
