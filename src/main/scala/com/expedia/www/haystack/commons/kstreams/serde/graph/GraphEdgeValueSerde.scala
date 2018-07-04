@@ -23,7 +23,7 @@ import com.expedia.www.haystack.commons.entities.GraphEdge
 import com.google.gson.Gson
 import org.apache.kafka.common.serialization.{Deserializer, Serde, Serializer}
 
-class GraphEdgeSerde extends Serde[GraphEdge] {
+class GraphEdgeValueSerde extends Serde[GraphEdge] {
   override def deserializer(): Deserializer[GraphEdge] = new GraphEdgeDeserializer
 
   override def serializer(): Serializer[GraphEdge] = new GraphEdgeSerializer
@@ -31,24 +31,25 @@ class GraphEdgeSerde extends Serde[GraphEdge] {
   override def configure(map: util.Map[String, _], b: Boolean): Unit = ()
 
   override def close(): Unit = ()
-}
 
-class GraphEdgeSerializer extends Serializer[GraphEdge] {
-  override def serialize(topic: String, graphEdge: GraphEdge): Array[Byte] = {
-    new Gson().toJson(graphEdge).getBytes
+  class GraphEdgeSerializer extends Serializer[GraphEdge] {
+    override def serialize(topic: String, graphEdge: GraphEdge): Array[Byte] = {
+      new Gson().toJson(graphEdge).getBytes
+    }
+
+    override def configure(map: util.Map[String, _], b: Boolean): Unit = ()
+
+    override def close(): Unit = ()
   }
 
-  override def configure(map: util.Map[String, _], b: Boolean): Unit = ()
+  class GraphEdgeDeserializer extends Deserializer[GraphEdge] {
+    override def deserialize(topic: String, data: Array[Byte]): GraphEdge = {
+      new Gson().fromJson(new String(data), classOf[GraphEdge])
+    }
 
-  override def close(): Unit = ()
-}
+    override def configure(map: util.Map[String, _], b: Boolean): Unit = ()
 
-class GraphEdgeDeserializer extends Deserializer[GraphEdge] {
-  override def deserialize(topic: String, data: Array[Byte]): GraphEdge = {
-    new Gson().fromJson(new String(data), classOf[GraphEdge])
+    override def close(): Unit = ()
   }
-
-  override def configure(map: util.Map[String, _], b: Boolean): Unit = ()
-
-  override def close(): Unit = ()
 }
+
