@@ -48,7 +48,7 @@ class GraphEdgeKeySerdeSpec extends UnitTestSpec {
       val deserializer = (new GraphEdgeKeySerde).deserializer()
 
       And("a valid GraphEdge is provided")
-      val edge = GraphEdge(GraphVertex("sourceSvc", Map("testtag" -> "true").asJava), GraphVertex("destinationSvc", Map("othertag" -> "true").asJava),
+      val edge = GraphEdge(GraphVertex("sourceSvc"), GraphVertex("destinationSvc"),
         "operation")
 
       When("GraphEdge deserializer is used on valid array of bytes")
@@ -58,6 +58,7 @@ class GraphEdgeKeySerdeSpec extends UnitTestSpec {
       Then("it should deserialize correctly")
       serializedEdge.source.name should be("sourceSvc")
       serializedEdge.destination.name should be("destinationSvc")
+      serializedEdge.operation shouldEqual("operation")
       serializedEdge.source.tags.size() shouldBe 0
       serializedEdge.destination.tags.size() shouldBe 0
     }
