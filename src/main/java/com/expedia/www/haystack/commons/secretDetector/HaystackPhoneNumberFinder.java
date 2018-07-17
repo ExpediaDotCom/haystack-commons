@@ -29,7 +29,11 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.expedia.www.haystack.commons.secretDetector.CldrRegions.CANADA;
 import static com.expedia.www.haystack.commons.secretDetector.CldrRegions.FRANCE;
+import static com.expedia.www.haystack.commons.secretDetector.CldrRegions.GERMANY;
+import static com.expedia.www.haystack.commons.secretDetector.CldrRegions.ITALY;
+import static com.expedia.www.haystack.commons.secretDetector.CldrRegions.JAPAN;
 import static com.expedia.www.haystack.commons.secretDetector.CldrRegions.UNITED_KINGDOM;
 import static com.expedia.www.haystack.commons.secretDetector.CldrRegions.UNITED_STATES;
 
@@ -47,7 +51,16 @@ public class HaystackPhoneNumberFinder implements Finder {
 
     public HaystackPhoneNumberFinder(PhoneNumberUtil phoneNumberUtil) {
         this.phoneNumberUtil = phoneNumberUtil;
-        regions.addAll(Arrays.asList(UNITED_STATES, FRANCE, UNITED_KINGDOM));
+        regions.addAll(Arrays.asList(
+                // G7 countries to start, we'll see how well this size of list performs
+                CANADA,
+                FRANCE,
+                GERMANY,
+                ITALY,
+                JAPAN,
+                UNITED_KINGDOM,
+                UNITED_STATES
+        ));
     }
 
     @SuppressWarnings("SuspiciousGetterSetter")

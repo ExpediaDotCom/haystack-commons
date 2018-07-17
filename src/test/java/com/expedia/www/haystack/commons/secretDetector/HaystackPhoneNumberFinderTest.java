@@ -119,6 +119,6 @@ public class HaystackPhoneNumberFinderTest {
         final List<String> phoneNumbers = haystackPhoneNumberFinder.find(VALID_PHONE_NUMBERS[0]);
 
         assertTrue(phoneNumbers.isEmpty());
-        verify(mockPhoneNumberUtil).parseAndKeepRawInput(VALID_PHONE_NUMBERS[0], "US");
+        verify(mockPhoneNumberUtil).parseAndKeepRawInput(VALID_PHONE_NUMBERS[0], "CA");
     }
 }
