@@ -169,17 +169,6 @@ public class SpanDetectorTest {
     }
 
     @Test
-    public void testFindSecretsSocialSecurityNumberFalsePositive() {
-        when(mockFactory.createCounter(any(), anyString())).thenReturn(mockCounter);
-        final String stringWithFalsePositiveSsn = "-250-14-9479-1-";
-        @SuppressWarnings("DynamicRegexReplaceableByCompiledPattern") final String jsonWithFalsePositiveSsn =
-                JSON_SPAN_STRING.replace(STRING_FIELD_VALUE, stringWithFalsePositiveSsn);
-        final Span span = buildSpan(jsonWithFalsePositiveSsn);
-        final Map<String, List<String>> secrets = spanDetector.findSecrets(span);
-        assertTrue(secrets.isEmpty());
-    }
-
-    @Test
     public void testApplyNoSecret() {
         final Iterable<String> iterable = spanDetector.apply(FULLY_POPULATED_SPAN);
         assertFalse(iterable.iterator().hasNext());
