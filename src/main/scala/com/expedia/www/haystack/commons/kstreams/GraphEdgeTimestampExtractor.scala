@@ -15,14 +15,17 @@
  *      limitations under the License.
  *
  */
-package com.expedia.www.haystack.commons.entities
+
+package com.expedia.www.haystack.commons.kstreams
+
+import com.expedia.www.haystack.commons.entities.GraphEdge
+import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.apache.kafka.streams.processor.TimestampExtractor
 
 
-/**
-  * Case class with enough information to build a relationship between two service graph nodes
-  * @param source identifier for the source graph node
-  * @param destination identifier for the destination graph node
-  * @param operation identifier for the graph edge
-  * @param sourceTimestamp timestamp of source in millis
-  */
-case class GraphEdge(source: GraphVertex, destination: GraphVertex, operation: String, sourceTimestamp: Long)
+class GraphEdgeTimestampExtractor extends TimestampExtractor {
+  override def extract(consumerRecord: ConsumerRecord[AnyRef, AnyRef], previousTimestamp: Long): Long = {
+    // sourceTimestamp of GraphEdge in millis
+    consumerRecord.value().asInstanceOf[GraphEdge].sourceTimestamp
+  }
+}
