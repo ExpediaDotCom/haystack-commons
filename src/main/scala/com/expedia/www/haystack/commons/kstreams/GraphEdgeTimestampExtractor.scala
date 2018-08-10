@@ -18,18 +18,13 @@
 
 package com.expedia.www.haystack.commons.kstreams
 
-import com.expedia.open.tracing.Span
+import com.expedia.www.haystack.commons.entities.GraphEdge
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.streams.processor.TimestampExtractor
 
-class SpanTimestampExtractor extends TimestampExtractor {
 
-
-
-  override def extract(record: ConsumerRecord[AnyRef, AnyRef], previousTimestamp: Long): Long = {
-
-    //The startTime for span in computed in microseconds and hence dividing by 1000 to create the epochTimeInMs
-    record.value().asInstanceOf[Span].getStartTime / 1000
-
+class GraphEdgeTimestampExtractor extends TimestampExtractor {
+  override def extract(consumerRecord: ConsumerRecord[AnyRef, AnyRef], previousTimestamp: Long): Long = {
+    consumerRecord.value().asInstanceOf[GraphEdge].sourceTimestamp
   }
 }
