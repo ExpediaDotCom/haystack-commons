@@ -23,5 +23,6 @@ package com.expedia.www.haystack.commons.entities
   * @param source identifier for the source graph node
   * @param destination identifier for the destination graph node
   * @param operation identifier for the graph edge
+  * @param sourceTimestamp timestamp of source in millis
   */
 case class GraphEdge(source: GraphVertex, destination: GraphVertex, operation: String, sourceTimestamp: Long)

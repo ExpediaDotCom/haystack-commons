@@ -29,8 +29,8 @@ class GraphEdgeTimestampExtractorSpec extends UnitTestSpec {
     "extract timestamp from GraphEdge" in {
 
       Given("a GraphEdge with some timestamp")
-      val currentTimeInSecs = computeCurrentTimeInSecs
-      val graphEdge = GraphEdge(GraphVertex("svc1"), GraphVertex("svc2"), "oper1", currentTimeInSecs)
+      val time = System.currentTimeMillis()
+      val graphEdge = GraphEdge(GraphVertex("svc1"), GraphVertex("svc2"), "oper1", time)
       val extractor = new GraphEdgeTimestampExtractor
       val record: ConsumerRecord[AnyRef, AnyRef] = new ConsumerRecord("dummy-topic", 1, 1, "dummy-key", graphEdge)
 
@@ -38,7 +38,7 @@ class GraphEdgeTimestampExtractorSpec extends UnitTestSpec {
       val epochTime = extractor.extract(record, System.currentTimeMillis())
 
       Then("extracted time should equal GraphEdge time in milliseconds")
-      epochTime shouldEqual currentTimeInSecs
+      epochTime shouldEqual time
     }
   }
 }

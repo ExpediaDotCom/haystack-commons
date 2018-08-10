@@ -25,6 +25,7 @@ import org.apache.kafka.streams.processor.TimestampExtractor
 
 class GraphEdgeTimestampExtractor extends TimestampExtractor {
   override def extract(consumerRecord: ConsumerRecord[AnyRef, AnyRef], previousTimestamp: Long): Long = {
+    // sourceTimestamp of GraphEdge in millis
     consumerRecord.value().asInstanceOf[GraphEdge].sourceTimestamp
   }
 }
