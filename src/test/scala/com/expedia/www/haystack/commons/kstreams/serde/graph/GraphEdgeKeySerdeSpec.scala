@@ -28,16 +28,17 @@ class GraphEdgeKeySerdeSpec extends UnitTestSpec {
     "should serialize a GraphEdge" in {
       Given("a GraphEdge serializer")
       val serializer = (new GraphEdgeKeySerde).serializer()
+      val time = 1
 
       And("a valid GraphEdge is provided")
       val edge = GraphEdge(GraphVertex("sourceSvc"), GraphVertex("destinationSvc"),
-        "operation")
+        "operation", time)
 
       When("GraphEdge serializer is used to serialize the GraphEdge")
       val bytes = serializer.serialize("graph-nodes", edge)
 
       Then("it should serialize the object")
-      new String(bytes) shouldEqual "{\"source\":{\"name\":\"sourceSvc\",\"tags\":{}},\"destination\":{\"name\":\"destinationSvc\",\"tags\":{}},\"operation\":\"operation\"}"
+      new String(bytes) shouldEqual "{\"source\":{\"name\":\"sourceSvc\",\"tags\":{}},\"destination\":{\"name\":\"destinationSvc\",\"tags\":{}},\"operation\":\"operation\",\"sourceTimestamp\":1}"
     }
   }
 
@@ -49,7 +50,7 @@ class GraphEdgeKeySerdeSpec extends UnitTestSpec {
 
       And("a valid GraphEdge is provided")
       val edge = GraphEdge(GraphVertex("sourceSvc"), GraphVertex("destinationSvc"),
-        "operation")
+        "operation", System.currentTimeMillis())
 
       When("GraphEdge deserializer is used on valid array of bytes")
       val bytes = serializer.serialize("graph-nodes", edge)

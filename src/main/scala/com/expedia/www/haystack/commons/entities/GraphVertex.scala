@@ -23,6 +23,5 @@ package com.expedia.www.haystack.commons.entities
   * @param name: Name of the service vertex
   * @param tags: List of tag names associated with the service vertex
   */
-case class GraphVertex(name: String, tags: java.util.Map[String, String] = new java.util.HashMap[String, String]()) {
-}
+case class GraphVertex(name: String, tags: java.util.Map[String, String] = new java.util.HashMap[String, String]())
 
