@@ -31,7 +31,7 @@ class GraphEdgeValueSerdeSpec extends UnitTestSpec {
 
       And("a valid GraphEdge is provided")
       val edge = GraphEdge(GraphVertex("sourceSvc"), GraphVertex("destinationSvc"),
-        "operation")
+        "operation", System.currentTimeMillis())
 
       When("GraphEdge serializer is used to serialize the GraphEdge")
       val bytes = serializer.serialize("graph-nodes", edge)
@@ -49,7 +49,7 @@ class GraphEdgeValueSerdeSpec extends UnitTestSpec {
 
       And("a valid GraphEdge is provided")
       val edge = GraphEdge(GraphVertex("sourceSvc", Map("testtag" -> "true").asJava), GraphVertex("destinationSvc"),
-        "operation")
+        "operation", System.currentTimeMillis())
 
       When("GraphEdge deserializer is used on valid array of bytes")
       val bytes = serializer.serialize("graph-nodes", edge)

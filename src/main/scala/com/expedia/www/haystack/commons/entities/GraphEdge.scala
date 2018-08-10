@@ -24,6 +24,4 @@ package com.expedia.www.haystack.commons.entities
   * @param destination identifier for the destination graph node
   * @param operation identifier for the graph edge
   */
-case class GraphEdge(source: GraphVertex, destination: GraphVertex, operation: String) {
-}
-
+case class GraphEdge(source: GraphVertex, destination: GraphVertex, operation: String, sourceTimestamp: Long)

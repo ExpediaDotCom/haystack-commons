@@ -55,6 +55,6 @@ class GraphEdgeKeySerde extends Serde[GraphEdge] {
   }
 
   private def trimTagsFromGraphEdge(edge: GraphEdge): GraphEdge = {
-    GraphEdge(source = GraphVertex(edge.source.name), destination = GraphVertex(edge.destination.name), edge.operation)
+    GraphEdge(source = GraphVertex(edge.source.name), destination = GraphVertex(edge.destination.name), edge.operation, edge.sourceTimestamp)
   }
 }
