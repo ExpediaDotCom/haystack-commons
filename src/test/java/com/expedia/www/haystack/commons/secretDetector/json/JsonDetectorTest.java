@@ -12,6 +12,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -91,6 +93,13 @@ public class JsonDetectorTest {
         final List<String> ids = values.iterator().next();
         assertEquals("rootElement.childMap.childKey", ids.get(0));
         assertEquals("rootElement.childArray.[0]", ids.get(1));
+    }
+
+    @Test
+    public void testFinderSecretsNullJsonElement() {
+        final Map<String, List<String>> secrets = jsonDetector.findSecrets(null, Collections.emptyMap(), new LinkedList<>());
+
+        assertTrue(secrets.isEmpty());
     }
 
     private static JsonObject createJsonString(String mapValue, String arrayValue) {
