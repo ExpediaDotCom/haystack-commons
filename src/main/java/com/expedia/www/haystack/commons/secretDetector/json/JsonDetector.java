@@ -6,6 +6,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.netflix.servo.util.VisibleForTesting;
 import io.dataapps.chlorine.finder.FinderEngine;
 
 import java.util.Deque;
@@ -35,15 +36,18 @@ public class JsonDetector extends DetectorBase {
         return findSecrets(jsonElement, new HashMap<>(), new LinkedList<>());
     }
 
-    private Map<String, List<String>> findSecrets(JsonElement rootJsonElement,
-                                                  Map<String, List<String>> mapOfTypeToKeysOfSecrets,
-                                                  LinkedList<Object> ids) {
-        if (rootJsonElement.isJsonObject()) {
-            handleJsonObject(mapOfTypeToKeysOfSecrets, ids, rootJsonElement.getAsJsonObject());
-        } else if (rootJsonElement.isJsonArray()) {
-            handleJsonArray(mapOfTypeToKeysOfSecrets, ids, rootJsonElement.getAsJsonArray());
-        } else if (rootJsonElement.isJsonPrimitive()) {
-            handleJsonPrimitive(mapOfTypeToKeysOfSecrets, ids, rootJsonElement.getAsJsonPrimitive());
+    @VisibleForTesting
+    Map<String, List<String>> findSecrets(JsonElement rootJsonElement,
+                                          Map<String, List<String>> mapOfTypeToKeysOfSecrets,
+                                          LinkedList<Object> ids) {
+        if(rootJsonElement != null) {
+            if (rootJsonElement.isJsonObject()) {
+                handleJsonObject(mapOfTypeToKeysOfSecrets, ids, rootJsonElement.getAsJsonObject());
+            } else if (rootJsonElement.isJsonArray()) {
+                handleJsonArray(mapOfTypeToKeysOfSecrets, ids, rootJsonElement.getAsJsonArray());
+            } else if (rootJsonElement.isJsonPrimitive()) {
+                handleJsonPrimitive(mapOfTypeToKeysOfSecrets, ids, rootJsonElement.getAsJsonPrimitive());
+            }
         }
         return mapOfTypeToKeysOfSecrets;
     }
