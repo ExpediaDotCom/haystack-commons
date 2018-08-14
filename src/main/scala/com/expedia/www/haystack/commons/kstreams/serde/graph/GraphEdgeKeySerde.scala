@@ -21,10 +21,12 @@ package com.expedia.www.haystack.commons.kstreams.serde.graph
 import java.util
 
 import com.expedia.www.haystack.commons.entities.{GraphEdge, GraphVertex}
-import com.google.gson.Gson
 import org.apache.kafka.common.serialization.{Deserializer, Serde, Serializer}
+import org.json4s.DefaultFormats
+import org.json4s.jackson.Serialization
 
 class GraphEdgeKeySerde extends Serde[GraphEdge] {
+  implicit val formats = DefaultFormats
   override def deserializer(): Deserializer[GraphEdge] = new GraphEdgeKeyDeserializer()
 
   override def serializer(): Serializer[GraphEdge] = new GraphEdgeKeySerializer()
@@ -40,7 +42,7 @@ class GraphEdgeKeySerde extends Serde[GraphEdge] {
     override def close(): Unit = ()
 
     override def deserialize(topic: String, data: Array[Byte]): GraphEdge = {
-      new Gson().fromJson(new String(data), classOf[GraphEdge])
+      Serialization.read[GraphEdge](new String(data))
     }
   }
 
@@ -48,13 +50,13 @@ class GraphEdgeKeySerde extends Serde[GraphEdge] {
     override def configure(map: util.Map[String, _], b: Boolean): Unit = ()
 
     override def serialize(topic: String, edge: GraphEdge): Array[Byte] = {
-        new Gson().toJson(trimTagsFromGraphEdge(edge)).getBytes("utf-8")
+      Serialization.write(normalizeKey(edge)).getBytes("utf-8")
     }
 
     override def close(): Unit = ()
   }
 
-  private def trimTagsFromGraphEdge(edge: GraphEdge): GraphEdge = {
-    GraphEdge(source = GraphVertex(edge.source.name), destination = GraphVertex(edge.destination.name), edge.operation, edge.sourceTimestamp)
+  private def normalizeKey(edge: GraphEdge): GraphEdge = {
+    GraphEdge(source = GraphVertex(edge.source.name), destination = GraphVertex(edge.destination.name), edge.operation, 0l)
   }
 }

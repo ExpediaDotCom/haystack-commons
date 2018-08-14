@@ -21,8 +21,6 @@ package com.expedia.www.haystack.commons.kstreams.serde.graph
 import com.expedia.www.haystack.commons.entities.{GraphEdge, GraphVertex}
 import com.expedia.www.haystack.commons.unit.UnitTestSpec
 
-import scala.collection.JavaConverters._
-
 class GraphEdgeValueSerdeSpec extends UnitTestSpec {
   "GraphEdge Value serializer" should {
     "should serialize a GraphEdge" in {
@@ -48,7 +46,7 @@ class GraphEdgeValueSerdeSpec extends UnitTestSpec {
       val deserializer = (new GraphEdgeValueSerde).deserializer()
 
       And("a valid GraphEdge is provided")
-      val edge = GraphEdge(GraphVertex("sourceSvc", Map("testtag" -> "true").asJava), GraphVertex("destinationSvc"),
+      val edge = GraphEdge(GraphVertex("sourceSvc", Map("testtag" -> "true")), GraphVertex("destinationSvc"),
         "operation", System.currentTimeMillis())
 
       When("GraphEdge deserializer is used on valid array of bytes")
@@ -58,7 +56,7 @@ class GraphEdgeValueSerdeSpec extends UnitTestSpec {
       Then("it should deserialize correctly")
       edge should be(serializedEdge)
       edge.source.name should be("sourceSvc")
-      edge.source.tags.get("testtag") should be ("true")
+      edge.source.tags.get("testtag") shouldBe Some("true")
     }
   }
 }

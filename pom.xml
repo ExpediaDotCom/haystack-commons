@@ -26,7 +26,7 @@
 
     <groupId>com.expedia.www</groupId>
     <artifactId>haystack-commons</artifactId>
-    <version>1.0.49-SNAPSHOT</version>
+    <version>1.0.50-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <scm>
@@ -94,6 +94,7 @@
         <kafka.version>1.0.1</kafka.version>
         <grpc.version>1.7.0</grpc.version>
 
+        <json4s.version>3.6.0</json4s.version>
         <!-- compiler properties -->
         <project.jdk.version>1.8</project.jdk.version>
         <scala.major.version>2</scala.major.version>
@@ -160,6 +161,14 @@
             <groupId>com.typesafe</groupId>
             <artifactId>config</artifactId>
             <version>${typesafe-config.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.json4s/json4s-jackson -->
+        <dependency>
+            <groupId>org.json4s</groupId>
+            <artifactId>json4s-jackson_2.12</artifactId>
+            <version>${json4s.version}</version>
             <scope>provided</scope>
         </dependency>
 

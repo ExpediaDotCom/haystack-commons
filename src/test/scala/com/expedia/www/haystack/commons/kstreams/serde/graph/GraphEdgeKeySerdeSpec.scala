@@ -21,8 +21,6 @@ package com.expedia.www.haystack.commons.kstreams.serde.graph
 import com.expedia.www.haystack.commons.entities.{GraphEdge, GraphVertex}
 import com.expedia.www.haystack.commons.unit.UnitTestSpec
 
-import scala.collection.JavaConverters._
-
 class GraphEdgeKeySerdeSpec extends UnitTestSpec {
   "GraphEdge Key serializer" should {
     "should serialize a GraphEdge" in {
@@ -37,7 +35,7 @@ class GraphEdgeKeySerdeSpec extends UnitTestSpec {
       val bytes = serializer.serialize("graph-nodes", edge)
 
       Then("it should serialize the object")
-      new String(bytes) shouldEqual "{\"source\":{\"name\":\"sourceSvc\",\"tags\":{}},\"destination\":{\"name\":\"destinationSvc\",\"tags\":{}},\"operation\":\"operation\",\"sourceTimestamp\":1}"
+      new String(bytes) shouldEqual "{\"source\":{\"name\":\"sourceSvc\",\"tags\":{}},\"destination\":{\"name\":\"destinationSvc\",\"tags\":{}},\"operation\":\"operation\",\"sourceTimestamp\":0}"
     }
   }
 
@@ -53,14 +51,18 @@ class GraphEdgeKeySerdeSpec extends UnitTestSpec {
 
       When("GraphEdge deserializer is used on valid array of bytes")
       val bytes = serializer.serialize("graph-nodes", edge)
-      val serializedEdge = deserializer.deserialize("graph-nodes", bytes)
+      val dataWithoutSourceTimestamp = "{\"source\":{\"name\":\"sourceSvc\",\"tags\":{}},\"destination\":{\"name\":\"destinationSvc\",\"tags\":{}},\"operation\":\"operation\"}"
+
+      val serializedEdge_1 = deserializer.deserialize("graph-nodes", bytes)
+      val serializedEdge_2 = deserializer.deserialize("graph-nodes", dataWithoutSourceTimestamp.getBytes("utf-8"))
 
       Then("it should deserialize correctly")
-      serializedEdge.source.name should be("sourceSvc")
-      serializedEdge.destination.name should be("destinationSvc")
-      serializedEdge.operation shouldEqual("operation")
-      serializedEdge.source.tags.size() shouldBe 0
-      serializedEdge.destination.tags.size() shouldBe 0
+      serializedEdge_1.source.name should be("sourceSvc")
+      serializedEdge_1.destination.name should be("destinationSvc")
+      serializedEdge_1.operation shouldEqual "operation"
+      serializedEdge_1.source.tags.size shouldBe 0
+      serializedEdge_1.destination.tags.size shouldBe 0
+      serializedEdge_2.sourceTimestamp should not be 0l
     }
   }
 }

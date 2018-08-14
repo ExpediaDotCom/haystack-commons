@@ -20,10 +20,13 @@ package com.expedia.www.haystack.commons.kstreams.serde.graph
 import java.util
 
 import com.expedia.www.haystack.commons.entities.GraphEdge
-import com.google.gson.Gson
 import org.apache.kafka.common.serialization.{Deserializer, Serde, Serializer}
+import org.json4s.DefaultFormats
+import org.json4s.jackson.Serialization
 
 class GraphEdgeValueSerde extends Serde[GraphEdge] {
+  implicit val formats = DefaultFormats
+
   override def deserializer(): Deserializer[GraphEdge] = new GraphEdgeDeserializer
 
   override def serializer(): Serializer[GraphEdge] = new GraphEdgeSerializer
@@ -34,7 +37,7 @@ class GraphEdgeValueSerde extends Serde[GraphEdge] {
 
   class GraphEdgeSerializer extends Serializer[GraphEdge] {
     override def serialize(topic: String, graphEdge: GraphEdge): Array[Byte] = {
-      new Gson().toJson(graphEdge).getBytes
+      Serialization.write(graphEdge).getBytes("utf-8")
     }
 
     override def configure(map: util.Map[String, _], b: Boolean): Unit = ()
@@ -44,7 +47,7 @@ class GraphEdgeValueSerde extends Serde[GraphEdge] {
 
   class GraphEdgeDeserializer extends Deserializer[GraphEdge] {
     override def deserialize(topic: String, data: Array[Byte]): GraphEdge = {
-      new Gson().fromJson(new String(data), classOf[GraphEdge])
+      Serialization.read[GraphEdge](new String(data))
     }
 
     override def configure(map: util.Map[String, _], b: Boolean): Unit = ()
