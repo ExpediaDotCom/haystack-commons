@@ -167,7 +167,7 @@
         <!-- https://mvnrepository.com/artifact/org.json4s/json4s-jackson -->
         <dependency>
             <groupId>org.json4s</groupId>
-            <artifactId>json4s-jackson_2.12</artifactId>
+            <artifactId>json4s-jackson_${scala.major.minor.version}</artifactId>
             <version>${json4s.version}</version>
             <scope>provided</scope>
         </dependency>
