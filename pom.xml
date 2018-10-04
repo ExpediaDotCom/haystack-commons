@@ -89,6 +89,8 @@
         <grpc.version>1.7.0</grpc.version>
 
         <json4s.version>3.6.0</json4s.version>
+        <metrics-java.version>0.4.0</metrics-java.version>
+
         <!-- compiler properties -->
         <project.jdk.version>1.8</project.jdk.version>
         <scala.major.version>2</scala.major.version>
@@ -232,6 +234,13 @@
             <groupId>org.msgpack</groupId>
             <artifactId>msgpack-core</artifactId>
             <version>${msgpack.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.expedia</groupId>
+            <artifactId>metrics-java</artifactId>
+            <version>${metrics-java.version}</version>
             <scope>provided</scope>
         </dependency>
 
