@@ -22,7 +22,6 @@ import java.util
 
 import com.expedia.metrics.{MetricData, MetricDefinition, TagCollection}
 import com.expedia.www.haystack.commons.entities.TagKeys._
-import com.expedia.www.haystack.commons.entities.encoders.{Encoder, PeriodReplacementEncoder}
 import com.expedia.www.haystack.commons.entities.{Interval, TagKeys}
 import com.expedia.www.haystack.commons.metrics.MetricsSupport
 import org.apache.commons.codec.digest.DigestUtils
@@ -41,12 +40,12 @@ import scala.collection.immutable.ListMap
   */
 class MetricTankSerde() extends Serde[MetricData] with MetricsSupport {
 
-  override def deserializer(): MetricPointDeserializer = {
-    new MetricPointDeserializer()
+  override def deserializer(): MetricDataDeserializer = {
+    new MetricDataDeserializer()
   }
 
-  override def serializer(): MetricPointSerializer = {
-    new MetricPointSerializer()
+  override def serializer(): MetricDataSerializer = {
+    new MetricDataSerializer()
   }
 
   override def configure(configs: java.util.Map[String, _], isKey: Boolean): Unit = ()
@@ -54,7 +53,7 @@ class MetricTankSerde() extends Serde[MetricData] with MetricsSupport {
   override def close(): Unit = ()
 }
 
-class MetricPointDeserializer() extends Deserializer[MetricData] with MetricsSupport {
+class MetricDataDeserializer() extends Deserializer[MetricData] with MetricsSupport {
 
   private val metricPointDeserFailureMeter = metricRegistry.meter("metricpoint.deser.failure")
   private val TAG_DELIMETER = "="
@@ -106,7 +105,7 @@ class MetricPointDeserializer() extends Deserializer[MetricData] with MetricsSup
   override def close(): Unit = ()
 }
 
-class MetricPointSerializer() extends Serializer[MetricData] with MetricsSupport {
+class MetricDataSerializer() extends Serializer[MetricData] with MetricsSupport {
   private val metricPointSerFailureMeter = metricRegistry.meter("metricpoint.ser.failure")
   private val metricPointSerSuccessMeter = metricRegistry.meter("metricpoint.ser.success")
   private val DEFAULT_ORG_ID = 1
@@ -129,7 +128,7 @@ class MetricPointSerializer() extends Serializer[MetricData] with MetricsSupport
 
       val metricDataMap = Map[Value, Value](
         ValueFactory.newString(idKey) -> ValueFactory.newString(s"${getId(metricData)}"),
-        ValueFactory.newString(nameKey) -> ValueFactory.newString(getKey(metricData)),
+        ValueFactory.newString(nameKey) -> ValueFactory.newString(metricData.getMetricDefinition.getKey),
         ValueFactory.newString(orgIdKey) -> ValueFactory.newInteger(getOrgId(metricData)),
         ValueFactory.newString(intervalKey) -> new ImmutableSignedLongValueImpl(retrieveInterval(metricData)),
         ValueFactory.newString(metricKey) -> ValueFactory.newString(metricData.getMetricDefinition.getKey),
@@ -151,33 +150,37 @@ class MetricPointSerializer() extends Serializer[MetricData] with MetricsSupport
   }
 
   //Retrieves the interval in case its present in the tags else uses the default interval
-  def retrieveInterval(metricData: MetricData): Int = {
-    metricData.getMetricDefinition.getTags.getKv.asScala.get(TagKeys.INTERVAL_KEY).map(stringInterval => Interval.fromName(stringInterval).timeInSeconds).getOrElse(DEFAULT_INTERVAL_IN_SEC)
+  private def retrieveInterval(metricData: MetricData): Int = {
+    getMetricTags(metricData).asScala.get(TagKeys.INTERVAL_KEY).map(stringInterval => Interval.fromName(stringInterval).timeInSeconds).getOrElse(DEFAULT_INTERVAL_IN_SEC)
   }
 
-  def retrieveType(metricData: MetricData): String = {
-    metricData.getMetricDefinition.getTags.getKv.get(MetricDefinition.MTYPE)
+  private def retrieveType(metricData: MetricData): String = {
+    getMetricTags(metricData).get(MetricDefinition.MTYPE)
   }
 
-  def retrieveTags(metricData: MetricData): List[Value] = {
-    metricData.getMetricDefinition.getTags.getKv.asScala.map(tuple => {
+  private def retrieveTags(metricData: MetricData): List[Value] = {
+    getMetricTags(metricData).asScala.map(tuple => {
       ValueFactory.newString(s"${tuple._1}=${tuple._2}")
     }).toList
   }
 
-  def getId(metricData: MetricData): String = {
+  private def getId(metricData: MetricData): String = {
     s"${getOrgId(metricData)}.${DigestUtils.md5Hex(getKey(metricData))}"
   }
 
-  def getKey(metricData: MetricData): String = {
-    val metricTags = metricData.getMetricDefinition.getTags.getKv.asScala.foldLeft("")((tag, tuple) => {
+  private def getKey(metricData: MetricData): String = {
+    val metricTags = getMetricTags(metricData).asScala.foldLeft("")((tag, tuple) => {
       tag + s"${tuple._1}.${tuple._2}."
     })
-    s"haystack.$metricTags${metricData.getMetricDefinition.getKey}"
+    s"$metricTags${metricData.getMetricDefinition.getKey}"
   }
 
-  def getOrgId(metricData: MetricData): Int = {
-    metricData.getMetricDefinition.getTags.getKv.getOrDefault(ORG_ID_KEY, DEFAULT_ORG_ID.toString).toInt
+  private def getOrgId(metricData: MetricData): Int = {
+    getMetricTags(metricData).getOrDefault(ORG_ID_KEY, DEFAULT_ORG_ID.toString).toInt
+  }
+
+  private def getMetricTags(metricData: MetricData) : util.Map[String, String] = {
+    metricData.getMetricDefinition.getTags.getKv
   }
 
   override def close(): Unit = ()

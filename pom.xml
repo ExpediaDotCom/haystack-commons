@@ -190,6 +190,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.expedia</groupId>
+            <artifactId>metrics-java</artifactId>
+            <version>${metrics-java.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-protobuf</artifactId>
             <version>${grpc.version}</version>
@@ -234,13 +240,6 @@
             <groupId>org.msgpack</groupId>
             <artifactId>msgpack-core</artifactId>
             <version>${msgpack.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.expedia</groupId>
-            <artifactId>metrics-java</artifactId>
-            <version>${metrics-java.version}</version>
             <scope>provided</scope>
         </dependency>
 
