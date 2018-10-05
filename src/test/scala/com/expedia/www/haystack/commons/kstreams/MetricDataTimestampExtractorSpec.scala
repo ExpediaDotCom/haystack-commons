@@ -18,27 +18,35 @@
 
 package com.expedia.www.haystack.commons.kstreams
 
-import com.expedia.www.haystack.commons.entities.{MetricPoint, MetricType}
+import com.expedia.metrics.{MetricData, MetricDefinition, TagCollection}
 import com.expedia.www.haystack.commons.unit.UnitTestSpec
 import org.apache.kafka.clients.consumer.ConsumerRecord
 
-class MetricPointTimestampExtractorSpec extends UnitTestSpec {
+import scala.util.Random
 
-  "MetricPointTimestampExtractor" should {
+class MetricDataTimestampExtractorSpec extends UnitTestSpec {
 
-    "extract timestamp from MetricPoint" in {
+  "MetricDataTimestampExtractor" should {
 
-      Given("a metric point with some timestamp")
+    "extract timestamp from MetricData" in {
+
+      Given("a metric data with some timestamp")
       val currentTimeInSecs = computeCurrentTimeInSecs
-      val metricPoint = MetricPoint("duration", MetricType.Gauge, null, 80, currentTimeInSecs)
-      val metricPointTimestampExtractor = new MetricPointTimestampExtractor
-      val record: ConsumerRecord[AnyRef, AnyRef] = new ConsumerRecord("dummy-topic", 1, 1, "dummy-key", metricPoint)
+      val metricData = getMetricData(currentTimeInSecs)
+      val metricDataTimestampExtractor = new MetricDataTimestampExtractor
+      val record: ConsumerRecord[AnyRef, AnyRef] = new ConsumerRecord("dummy-topic", 1, 1, "dummy-key", metricData)
 
       When("extract timestamp")
-      val epochTime = metricPointTimestampExtractor.extract(record, System.currentTimeMillis())
+      val epochTime = metricDataTimestampExtractor.extract(record, System.currentTimeMillis())
 
       Then("extracted time should equal metric point time in milliseconds")
       epochTime shouldEqual currentTimeInSecs * 1000
     }
   }
+
+  private def getMetricData(timeStamp : Long): MetricData = {
+    val metricDefinition = new MetricDefinition("duration")
+    new MetricData(metricDefinition, Random.nextDouble(), timeStamp)
+  }
+
 }
