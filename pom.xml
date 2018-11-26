@@ -369,10 +369,12 @@
                             <includeDirectories>
                                 <include>${project.basedir}/haystack-idl/proto</include>
                                 <include>${project.basedir}/haystack-idl/proto/api</include>
+                                <include>${project.basedir}/haystack-idl/proto/backend</include>
                             </includeDirectories>
                             <inputDirectories>
                                 <include>${project.basedir}/haystack-idl/proto</include>
                                 <include>${project.basedir}/haystack-idl/proto/api</include>
+                                <include>${project.basedir}/haystack-idl/proto/backend</include>
                             </inputDirectories>
                             <outputDirectory>${project.basedir}/target/generated-sources</outputDirectory>
                             <outputTargets>
