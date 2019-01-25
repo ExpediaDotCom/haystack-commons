@@ -35,14 +35,14 @@ import scala.collection.immutable.ListMap
   * This class takes a metric data object and serializes it into a messagepack encoded bytestream
   * which is metrics 2.0 format. The serialized data is finally streamed to kafka
   */
-class MetricTankSerde() extends Serde[MetricData] with MetricsSupport {
+class MetricDataSerde() extends Serde[MetricData] with MetricsSupport {
 
-  override def deserializer(): MetricDataDeserializer = {
-    new MetricDataDeserializer()
+  override def deserializer(): MetricDeserializer = {
+    new MetricDeserializer()
   }
 
-  override def serializer(): MetricDataSerializer = {
-    new MetricDataSerializer()
+  override def serializer(): MetricSerializer = {
+    new MetricSerializer()
   }
 
   override def configure(configs: java.util.Map[String, _], isKey: Boolean): Unit = ()
@@ -50,9 +50,9 @@ class MetricTankSerde() extends Serde[MetricData] with MetricsSupport {
   override def close(): Unit = ()
 }
 
-class MetricDataDeserializer() extends Deserializer[MetricData] with MetricsSupport {
+class MetricDeserializer() extends Deserializer[MetricData] with MetricsSupport {
 
-  private val metricPointDeserFailureMeter = metricRegistry.meter("metricdata.deser.failure")
+  private val metricDataDeserFailureMeter = metricRegistry.meter("metricdata.deser.failure")
   private val TAG_DELIMETER = "="
   private val metricKey = "Metric"
   private val valueKey = "Value"
@@ -63,9 +63,9 @@ class MetricDataDeserializer() extends Deserializer[MetricData] with MetricsSupp
   override def configure(map: java.util.Map[String, _], b: Boolean): Unit = ()
 
   /**
-    * converts the messagepack bytes into MetricPoint object
+    * converts the messagepack bytes into MetricData object
     *
-    * @param data serialized bytes of MetricPoint
+    * @param data serialized bytes of MetricData
     * @return
     */
   override def deserialize(topic: String, data: Array[Byte]): MetricData = {
@@ -80,7 +80,7 @@ class MetricDataDeserializer() extends Deserializer[MetricData] with MetricsSupp
     } catch {
       case ex: Exception =>
         /* may be log and add metric */
-        metricPointDeserFailureMeter.mark()
+        metricDataDeserFailureMeter.mark()
         null
     }
   }
@@ -97,9 +97,9 @@ class MetricDataDeserializer() extends Deserializer[MetricData] with MetricsSupp
   override def close(): Unit = ()
 }
 
-class MetricDataSerializer() extends Serializer[MetricData] with MetricsSupport {
-  private val metricPointSerFailureMeter = metricRegistry.meter("metricdata.ser.failure")
-  private val metricPointSerSuccessMeter = metricRegistry.meter("metricdata.ser.success")
+class MetricSerializer() extends Serializer[MetricData] with MetricsSupport {
+  private val metricDataSerFailureMeter = metricRegistry.meter("metricdata.ser.failure")
+  private val metricDataSerSuccessMeter = metricRegistry.meter("metricdata.ser.success")
   private val metricKey = "Metric"
   private val valueKey = "Value"
   private val timeKey = "Time"
@@ -119,12 +119,12 @@ class MetricDataSerializer() extends Serializer[MetricData] with MetricsSupport 
       )
       packer.packValue(ValueFactory.newMap(metricDataMap.asJava))
       val data = packer.toByteArray
-      metricPointSerSuccessMeter.mark()
+      metricDataSerSuccessMeter.mark()
       data
     } catch {
       case ex: Exception =>
         /* may be log and add metric */
-        metricPointSerFailureMeter.mark()
+        metricDataSerFailureMeter.mark()
         null
     }
   }
