@@ -27,7 +27,7 @@
     <parent>
         <groupId>com.expedia.www</groupId>
         <artifactId>haystack-commons-parent</artifactId>
-        <version>1.0.59-SNAPSHOT</version>
+        <version>1.0.61-SNAPSHOT</version>
     </parent>
 
     <artifactId>haystack-commons</artifactId>
