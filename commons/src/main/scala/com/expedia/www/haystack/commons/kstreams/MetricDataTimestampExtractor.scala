@@ -22,12 +22,15 @@ import com.expedia.metrics.MetricData
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.streams.processor.TimestampExtractor
 
-class MetricDataTimestampExtractor extends TimestampExtractor {
+class MetricDataTimestampExtractor extends TimestampExtractor with IteratorAgeMetricSupport {
 
   override def extract(record: ConsumerRecord[AnyRef, AnyRef], previousTimestamp: Long): Long = {
 
-    //The startTime for metricpoints in computed in seconds and hence multiplying by 1000 to create the epochTimeInMs
-    record.value().asInstanceOf[MetricData].getTimestamp * 1000
+    //The startTime for metricData in computed in seconds and hence multiplying by 1000 to create the epochTimeInMs
+    val metricDataTimestampMs =  record.value().asInstanceOf[MetricData].getTimestamp * 1000
+    updateIteratorAge(metricDataTimestampMs)
+    metricDataTimestampMs
 
   }
+
 }

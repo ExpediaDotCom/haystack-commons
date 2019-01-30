@@ -23,9 +23,12 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.streams.processor.TimestampExtractor
 
 
-class GraphEdgeTimestampExtractor extends TimestampExtractor {
+class GraphEdgeTimestampExtractor extends TimestampExtractor with IteratorAgeMetricSupport {
   override def extract(consumerRecord: ConsumerRecord[AnyRef, AnyRef], previousTimestamp: Long): Long = {
+
     // sourceTimestamp of GraphEdge in millis
-    consumerRecord.value().asInstanceOf[GraphEdge].sourceTimestamp
+    val sourceTimestampMs = consumerRecord.value().asInstanceOf[GraphEdge].sourceTimestamp
+    updateIteratorAge(sourceTimestampMs)
+    sourceTimestampMs
   }
 }
