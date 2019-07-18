@@ -13,7 +13,7 @@ script:
   - if ([ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]) || [ -n "$TRAVIS_TAG" ]; then .travis/deploy.sh; else ./mvnw clean compile scoverage:report; fi
 
 
-jdk: oraclejdk8
+jdk: openjdk8
 
 notifications:
   email:
