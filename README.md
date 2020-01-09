@@ -36,11 +36,5 @@ mvn clean package
 * Raise a PR
 
 #### Releasing haystack-commons
+* https://github.com/ExpediaDotCom/haystack-commons/blob/master/Release.md
 
-* Git tagging: 
-
-```git tag -a v1.4 -m "my version 1.4"```
-
-Or you can also tag using UI: https://github.com/ExpediaDotCom/haystack-commons/releases
-
-* Update https://github.com/ExpediaDotCom/haystack-commons/blob/master/ReleaseNotes.md
